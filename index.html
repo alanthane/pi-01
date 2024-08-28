@@ -177,7 +177,7 @@
     <a href="#" class="link" onclick="startPiRecitation(500)">500</a>
 
     <div id="custom-input">
-        <input type="number" id="custom-number" min="1" max="500" placeholder="Entrez un nombre (1-500)">
+        <input type="number" id="custom-number" min="1" max="500" placeholder="(1-500)">
         <button class="custom-btn" onclick="startCustomPiRecitation()">Afficher</button>
     </div>
 
@@ -194,8 +194,8 @@
     </div>
 
     <div id="controls">
-        <button id="prev-btn" onclick="displayPrevCharacter()">Précédent</button>
-        <button id="next-btn" onclick="displayNextCharacter()">Suivant</button>
+        <button id="prev-btn" onclick="displayPrevCharacter()"><</button>
+        <button id="next-btn" onclick="displayNextCharacter()">></button>
     </div>
 
     <!-- Pavé numérique -->
@@ -265,7 +265,7 @@
             document.getElementById('character-display').textContent = currentCharacter;
             document.getElementById('prev-character').textContent = prevCharacter;
 
-            document.getElementById('counter').textContent = `Décimale ${currentIndex} sur ${characters.length}`;
+            document.getElementById('counter').textContent = `${currentIndex}/${characters.length}`;
 
             document.getElementById('progress-bar').value = currentIndex;
             updateSliderColor();
