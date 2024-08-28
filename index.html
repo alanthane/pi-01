@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Décimales de Pi - Apprentissage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #character-display {
+            font-size: 2em;
+            margin-top: 20px;
+        }
+        #next-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Apprentissage des Décimales de Pi</h1>
+    <textarea id="input-text" rows="10" cols="50" placeholder="Collez les décimales ici..."></textarea>
+    <br><br>
+    <button id="start-btn">Commencer</button>
+    <div id="character-display"></div>
+    <button id="next-btn" style="display: none;">Suivant</button>
+
+    <script>
+        let characters = [];
+        let currentIndex = 0;
+
+        document.getElementById('start-btn').addEventListener('click', function() {
+            const inputText = document.getElementById('input-text').value;
+            if (inputText) {
+                characters = inputText.split('');
+                currentIndex = 0;
+                displayNextCharacter();
+                document.getElementById('next-btn').style.display = 'inline-block';
+            }
+        });
+
+        document.getElementById('next-btn').addEventListener('click', function() {
+            if (currentIndex < characters.length) {
+                displayNextCharacter();
+            }
+        });
+
+        function displayNextCharacter() {
+            document.getElementById('character-display').textContent = characters[currentIndex];
+            currentIndex++;
+        }
+    </script>
+</body>
+</html>
