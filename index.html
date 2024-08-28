@@ -207,12 +207,9 @@
     <!-- Slider pour basculer entre les modes -->
     <div id="mode-toggle-container">
         <input type="checkbox" id="mode-toggle" onclick="toggleMode()">
-        <span class="icon icon-gaming">🎮</span>
-        <span class="icon icon-classic">🔍</span>
-    </div>
+   </div>
 
-    <!-- Contenu du mode Gaming -->
-    <div id="mode-gaming">
+    <div id="mode-gaming" style="display: none;">
         <div id="character-display-container">
             <div id="prev-character"></div>
             <div id="character-display"></div>
@@ -225,14 +222,15 @@
             <input type="range" id="progress-bar-gaming" min="0" value="0" step="1" oninput="updateFromSliderGaming()">
         </div>
 
-        <!-- Conteneur pour les contrôles de navigation et le pavé numérique -->
-        <div id="controls-container">
-            <!-- Contrôles de navigation -->
-            <button id="prev-btn-gaming" class="numpad-btn" onclick="displayPrevCharacterGaming()">&#8249;</button>
-            <button id="restart-btn-gaming" class="numpad-btn" onclick="restartPiRecitationGaming()">&#10227;</button>
-            <button id="next-btn-gaming" class="numpad-btn" onclick="displayNextCharacterGaming()">&#8250;</button>
 
-            <!-- Pavé numérique -->
+        <!-- Conteneur pour le bouton Restart centré au-dessus du pavé numérique -->
+        <div style="display: flex; justify-content: center; margin-bottom: 10px;">
+            <button id="restart-btn-gaming" class="numpad-btn" onclick="restartPiRecitationGaming()">&#10227;</button>
+        </div>
+
+
+            <!-- Pavé numérique centré -->
+        <div id="numpad" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; justify-items: center; max-width: 220px; margin: 0 auto;">
             <button class="numpad-btn" onclick="checkAnswerGaming(1)">1</button>
             <button class="numpad-btn" onclick="checkAnswerGaming(2)">2</button>
             <button class="numpad-btn" onclick="checkAnswerGaming(3)">3</button>
@@ -242,12 +240,13 @@
             <button class="numpad-btn" onclick="checkAnswerGaming(7)">7</button>
             <button class="numpad-btn" onclick="checkAnswerGaming(8)">8</button>
             <button class="numpad-btn" onclick="checkAnswerGaming(9)">9</button>
-            <button class="numpad-btn" onclick="checkAnswerGaming(0)">0</button>
+            <button class="numpad-btn" onclick="checkAnswerGaming(0)" style="grid-column: 2;">0</button> <!-- Centrer la touche 0 -->
+        </div>
         </div>
     </div>
 
-    <!-- Contenu du mode Classique -->
-    <div id="mode-classic" style="display: none;">
+    <!-- Contenu du mode Classique (affiché par défaut) -->
+    <div id="mode-classic">
         <p>Choisissez le nombre de décimales à afficher :</p>
         <a href="#" class="link" onclick="startPiRecitationClassic(100)">100</a>
         <a href="#" class="link" onclick="startPiRecitationClassic(200)">200</a>
@@ -288,13 +287,24 @@
         let currentIndexGaming = 0;
         let currentIndexClassic = 0;
 
-        // Par défaut, initialiser le mode Gaming
-        startPiRecitationGaming();
+        // Initialiser le mode Classique par défaut
+        function initializeClassicMode() {
+            document.getElementById('mode-gaming').style.display = 'none';
+            document.getElementById('mode-classic').style.display = 'block';
+        }
+
+        window.onload = initializeClassicMode;
 
         function toggleMode() {
             const isGamingMode = document.getElementById('mode-toggle').checked;
-            document.getElementById('mode-gaming').style.display = isGamingMode ? 'block' : 'none';
-            document.getElementById('mode-classic').style.display = isGamingMode ? 'none' : 'block';
+            if (isGamingMode) {
+                document.getElementById('mode-gaming').style.display = 'block';
+                document.getElementById('mode-classic').style.display = 'none';
+                startPiRecitationGaming(); // Initialiser le mode Gaming quand il est activé
+            } else {
+                document.getElementById('mode-gaming').style.display = 'none';
+                document.getElementById('mode-classic').style.display = 'block';
+            }
         }
 
         // Fonctions pour le mode Gaming
