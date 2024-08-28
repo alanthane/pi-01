@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apprentissage des Décimales de Pi - V5</title>
+    <title>Apprentissage des Décimales de Pi - V5 Finale</title>
     <style>
         body {
             font-family: 'IBM Plex Mono', monospace;
@@ -11,10 +11,10 @@
             color: #333333;
             text-align: center;
             margin: 0;
-            padding: -10px;
+            padding: 0;
         }
         h1 {
-    margin-top: 0; /* Supprime la marge en haut du titre */
+            margin-top: 0;
             font-weight: 400;
             color: #000000;
             margin-bottom: 20px;
@@ -32,7 +32,7 @@
             border: 2px solid #000000;
             font-size: 1.1em;
             box-shadow: 2px 2px 0px #333333;
-            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
         }
         .link:hover, .custom-btn:hover, .control-btn:hover, .numpad-btn:hover {
             background-color: #d9534f;
@@ -147,6 +147,7 @@
             75% { transform: translateX(-5px); }
             100% { transform: translateX(0); }
         }
+    
         /* Slider Toggle */
         #mode-toggle-container {
             margin: 20px auto;
@@ -201,7 +202,6 @@
     </style>
 </head>
 
-
 <body>
     <h1>𝞹</h1>
 
@@ -223,14 +223,12 @@
             <input type="range" id="progress-bar-gaming" min="0" value="0" step="1" oninput="updateFromSliderGaming()">
         </div>
 
-
         <!-- Conteneur pour le bouton Restart centré au-dessus du pavé numérique -->
         <div style="display: flex; justify-content: center; margin-bottom: 10px;">
             <button id="restart-btn-gaming" class="numpad-btn" onclick="restartPiRecitationGaming()">&#10227;</button>
         </div>
 
-
-            <!-- Pavé numérique centré -->
+        <!-- Pavé numérique centré -->
         <div id="numpad" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; justify-items: center; max-width: 220px; margin: 0 auto;">
             <button class="numpad-btn" onclick="checkAnswerGaming(1)">1</button>
             <button class="numpad-btn" onclick="checkAnswerGaming(2)">2</button>
@@ -242,7 +240,6 @@
             <button class="numpad-btn" onclick="checkAnswerGaming(8)">8</button>
             <button class="numpad-btn" onclick="checkAnswerGaming(9)">9</button>
             <button class="numpad-btn" onclick="checkAnswerGaming(0)" style="grid-column: 2;">0</button> <!-- Centrer la touche 0 -->
-        </div>
         </div>
     </div>
 
@@ -362,12 +359,16 @@
 
         function checkAnswerGaming(answer) {
             const correctAnswer = charactersGaming[currentIndexGaming];
-            const numpad = document.getElementById('controls-container');
+            const numpad = document.getElementById('numpad');
 
             if (answer == correctAnswer) {
                 currentIndexGaming++;
                 updateDisplayGaming();
                 numpad.classList.remove('shake');
+                numpad.classList.add('correct');
+                setTimeout(() => {
+                    numpad.classList.remove('correct');
+                }, 200);
             } else {
                 numpad.classList.add('shake');
                 setTimeout(() => {
