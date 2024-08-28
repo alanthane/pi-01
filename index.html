@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apprentissage des Décimales de Pi - V4</title>
+    <title>Apprentissage des Décimales de Pi - V5</title>
     <style>
         body {
             font-family: 'IBM Plex Mono', monospace;
@@ -19,7 +19,7 @@
             margin-bottom: 20px;
             font-size: 2.2em;
         }
-        .link, .custom-btn, #next-btn, #prev-btn, .numpad-btn, #restart-btn {
+        .link, .custom-btn, .control-btn, .numpad-btn {
             display: inline-block;
             margin: 10px;
             padding: 12px 20px;
@@ -33,10 +33,14 @@
             box-shadow: 2px 2px 0px #333333;
             transition: background-color 0.2s ease, box-shadow 0.2s ease;
         }
-        .link:hover, .custom-btn:hover, #next-btn:hover, #prev-btn:hover, .numpad-btn:hover, #restart-btn:hover {
+        .link:hover, .custom-btn:hover, .control-btn:hover, .numpad-btn:hover {
             background-color: #d9534f;
             color: #ffffff;
             box-shadow: 1px 1px 0px #333333;
+        }
+        .link:active, .custom-btn:active, .control-btn:active, .numpad-btn:active {
+            transform: scale(0.95);
+            background-color: #c9302c;
         }
         #character-display-container {
             display: flex;
@@ -98,21 +102,6 @@
             font-size: 1.1em;
             color: #666666;
         }
-        #end-message {
-            font-size: 1.5em;
-            color: #000000;
-            margin-top: 30px;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 5px;
-            border: 2px solid #000000;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-            display: none; /* Masquer par défaut */
-        }
-        .link:active, .custom-btn:active, #next-btn:active, #prev-btn:active, .numpad-btn:active, #restart-btn:active {
-            transform: scale(0.95);
-            background-color: #c9302c;
-        }
         /* Barre de progression */
         #progress-container {
             margin-top: 20px;
@@ -157,146 +146,284 @@
             75% { transform: translateX(-5px); }
             100% { transform: translateX(0); }
         }
+        /* Slider Toggle */
+        #mode-toggle-container {
+            margin: 20px auto;
+            width: 100px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        #mode-toggle {
+            width: 100%;
+            height: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #mode-toggle::before {
+            content: '';
+            width: 40px;
+            height: 40px;
+            background: #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            transition: left 0.3s ease;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        #mode-toggle:checked::before {
+            left: 55px;
+        }
+        #mode-toggle:checked {
+            background-color: #d9534f;
+        }
+        .icon {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 15px;
+        }
+        .icon-gaming {
+            left: 10px;
+        }
+        .icon-classic {
+            right: 10px;
+        }
     </style>
 </head>
+
+
 <body>
     <h1>𝞹</h1>
-    <p>Choisissez le nombre de décimales à afficher :</p>
-    <a href="#" class="link" onclick="startPiRecitation(100)">100</a>
-    <a href="#" class="link" onclick="startPiRecitation(200)">200</a>
-    <a href="#" class="link" onclick="startPiRecitation(300)">300</a>
-    <a href="#" class="link" onclick="startPiRecitation(400)">400</a>
-    <a href="#" class="link" onclick="startPiRecitation(500)">500</a>
 
-    <div id="custom-input">
-        <input type="number" id="custom-number" min="1" max="500" placeholder="Entrez un nombre (1-500)">
-        <button class="custom-btn" onclick="startCustomPiRecitation()">Afficher</button>
+    <!-- Slider pour basculer entre les modes -->
+    <div id="mode-toggle-container">
+        <input type="checkbox" id="mode-toggle" onclick="toggleMode()">
+        <span class="icon icon-gaming">🎮</span>
+        <span class="icon icon-classic">🔍</span>
     </div>
 
-    <div id="character-display-container">
-        <div id="prev-character"></div>
-        <div id="character-display"></div>
+    <!-- Contenu du mode Gaming -->
+    <div id="mode-gaming">
+        <div id="character-display-container">
+            <div id="prev-character"></div>
+            <div id="character-display"></div>
+        </div>
+
+        <div id="counter"></div>
+
+        <!-- Barre de progression interactive -->
+        <div id="progress-container">
+            <input type="range" id="progress-bar-gaming" min="0" value="0" step="1" oninput="updateFromSliderGaming()">
+        </div>
+
+        <!-- Conteneur pour les contrôles de navigation et le pavé numérique -->
+        <div id="controls-container">
+            <!-- Contrôles de navigation -->
+            <button id="prev-btn-gaming" class="numpad-btn" onclick="displayPrevCharacterGaming()">&#8249;</button>
+            <button id="restart-btn-gaming" class="numpad-btn" onclick="restartPiRecitationGaming()">&#10227;</button>
+            <button id="next-btn-gaming" class="numpad-btn" onclick="displayNextCharacterGaming()">&#8250;</button>
+
+            <!-- Pavé numérique -->
+            <button class="numpad-btn" onclick="checkAnswerGaming(1)">1</button>
+            <button class="numpad-btn" onclick="checkAnswerGaming(2)">2</button>
+            <button class="numpad-btn" onclick="checkAnswerGaming(3)">3</button>
+            <button class="numpad-btn" onclick="checkAnswerGaming(4)">4</button>
+            <button class="numpad-btn" onclick="checkAnswerGaming(5)">5</button>
+            <button class="numpad-btn" onclick="checkAnswerGaming(6)">6</button>
+            <button class="numpad-btn" onclick="checkAnswerGaming(7)">7</button>
+            <button class="numpad-btn" onclick="checkAnswerGaming(8)">8</button>
+            <button class="numpad-btn" onclick="checkAnswerGaming(9)">9</button>
+            <button class="numpad-btn" onclick="checkAnswerGaming(0)">0</button>
+        </div>
     </div>
 
-    <div id="counter"></div>
+    <!-- Contenu du mode Classique -->
+    <div id="mode-classic" style="display: none;">
+        <p>Choisissez le nombre de décimales à afficher :</p>
+        <a href="#" class="link" onclick="startPiRecitationClassic(100)">100</a>
+        <a href="#" class="link" onclick="startPiRecitationClassic(200)">200</a>
+        <a href="#" class="link" onclick="startPiRecitationClassic(300)">300</a>
+        <a href="#" class="link" onclick="startPiRecitationClassic(400)">400</a>
+        <a href="#" class="link" onclick="startPiRecitationClassic(500)">500</a>
 
-    <!-- Barre de progression interactive -->
-    <div id="progress-container">
-        <input type="range" id="progress-bar" min="0" value="0" step="1" oninput="updateFromSlider()">
+        <div id="custom-input">
+            <input type="number" id="custom-number-classic" min="1" max="500" placeholder="Entrez un nombre (1-500)">
+            <button class="custom-btn" onclick="startCustomPiRecitationClassic()">Afficher</button>
+        </div>
+
+        <div id="character-display-container">
+            <div id="prev-character-classic"></div>
+            <div id="character-display-classic"></div>
+        </div>
+
+        <div id="counter-classic"></div>
+
+        <!-- Barre de progression interactive pour le mode classique -->
+        <div id="progress-container">
+            <input type="range" id="progress-bar-classic" min="0" value="0" step="1" oninput="updateFromSliderClassic()">
+        </div>
+
+        <!-- Contrôles de navigation pour le mode classique -->
+        <div id="controls-container">
+            <button id="prev-btn-classic" class="numpad-btn" onclick="displayPrevCharacterClassic()">&#8249;</button>
+            <button id="restart-btn-classic" class="numpad-btn" onclick="restartPiRecitationClassic()">&#10227;</button>
+            <button id="next-btn-classic" class="numpad-btn" onclick="displayNextCharacterClassic()">&#8250;</button>
+        </div>
     </div>
-
-    <!-- Conteneur pour les contrôles de navigation et le pavé numérique -->
-    <div id="controls-container">
-        <!-- Contrôles de navigation -->
-        <button id="prev-btn" onclick="displayPrevCharacter()">&#8249;</button>
-        <button id="restart-btn" onclick="restartPiRecitation()">&#10227;</button>
-        <button id="next-btn" onclick="displayNextCharacter()">&#8250;</button>
-
-        <!-- Pavé numérique -->
-        <button class="numpad-btn" onclick="checkAnswer(1)">1</button>
-        <button class="numpad-btn" onclick="checkAnswer(2)">2</button>
-        <button class="numpad-btn" onclick="checkAnswer(3)">3</button>
-        <button class="numpad-btn" onclick="checkAnswer(4)">4</button>
-        <button class="numpad-btn" onclick="checkAnswer(5)">5</button>
-        <button class="numpad-btn" onclick="checkAnswer(6)">6</button>
-        <button class="numpad-btn" onclick="checkAnswer(7)">7</button>
-        <button class="numpad-btn" onclick="checkAnswer(8)">8</button>
-        <button class="numpad-btn" onclick="checkAnswer(9)">9</button>
-        <button class="numpad-btn" onclick="checkAnswer(0)">0</button>
-    </div>
-
-    <div id="end-message">Bravo ! Vous avez atteint la fin.</div>
 
     <script>
         const piDecimals = "1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248912279381830119491";
 
-        let characters = [];
-        let currentIndex = 0;
+        let charactersGaming = [];
+        let charactersClassic = [];
+        let currentIndexGaming = 0;
+        let currentIndexClassic = 0;
 
-        function startPiRecitation(numDecimals) {
-            characters = piDecimals.substring(0, numDecimals).split('');
-            currentIndex = 0;
-            document.getElementById('progress-bar').max = characters.length; // Ajuster la longueur du slider
-            updateDisplay();
-            document.getElementById('next-btn').style.display = 'inline-block';
-            document.getElementById('prev-btn').style.display = 'inline-block';
-            document.getElementById('restart-btn').style.display = 'inline-block';
-            document.getElementById('end-message').style.display = 'none';
+        // Par défaut, initialiser le mode Gaming
+        startPiRecitationGaming();
+
+        function toggleMode() {
+            const isGamingMode = document.getElementById('mode-toggle').checked;
+            document.getElementById('mode-gaming').style.display = isGamingMode ? 'block' : 'none';
+            document.getElementById('mode-classic').style.display = isGamingMode ? 'none' : 'block';
         }
 
-        function startCustomPiRecitation() {
-            const numDecimals = document.getElementById('custom-number').value;
+        // Fonctions pour le mode Gaming
+        function startPiRecitationGaming() {
+            charactersGaming = piDecimals.substring(0, 500).split('');
+            currentIndexGaming = 0;
+            document.getElementById('progress-bar-gaming').max = charactersGaming.length;
+            updateDisplayGaming();
+        }
+
+        function displayNextCharacterGaming() {
+            if (currentIndexGaming < charactersGaming.length) {
+                currentIndexGaming++;
+                updateDisplayGaming();
+            }
+        }
+
+        function displayPrevCharacterGaming() {
+            if (currentIndexGaming > 1) {
+                currentIndexGaming--;
+                updateDisplayGaming();
+            }
+        }
+
+        function restartPiRecitationGaming() {
+            currentIndexGaming = 0;
+            updateDisplayGaming();
+        }
+
+        function updateDisplayGaming() {
+            const currentCharacter = charactersGaming[currentIndexGaming - 1] || '';
+            const prevCharacter = charactersGaming[currentIndexGaming - 2] || '';
+
+            document.getElementById('character-display').textContent = currentCharacter;
+            document.getElementById('prev-character').textContent = prevCharacter;
+
+            document.getElementById('counter').textContent = `${currentIndexGaming}/${charactersGaming.length}`;
+
+            document.getElementById('progress-bar-gaming').value = currentIndexGaming;
+            updateSliderColorGaming();
+        }
+
+        function updateFromSliderGaming() {
+            const slider = document.getElementById('progress-bar-gaming');
+            currentIndexGaming = parseInt(slider.value);
+            updateDisplayGaming();
+        }
+
+        function updateSliderColorGaming() {
+            const slider = document.getElementById('progress-bar-gaming');
+            const percentage = (slider.value / slider.max) * 100;
+            slider.style.background = `linear-gradient(to right, #d9534f ${percentage}%, #e0e0e0 ${percentage}%)`;
+        }
+
+        function checkAnswerGaming(answer) {
+            const correctAnswer = charactersGaming[currentIndexGaming];
+            const numpad = document.getElementById('controls-container');
+
+            if (answer == correctAnswer) {
+                currentIndexGaming++;
+                updateDisplayGaming();
+                numpad.classList.remove('shake');
+            } else {
+                numpad.classList.add('shake');
+                setTimeout(() => {
+                    numpad.classList.remove('shake');
+                }, 200);
+            }
+        }
+
+        // Fonctions pour le mode Classique
+        function startPiRecitationClassic(numDecimals) {
+            charactersClassic = piDecimals.substring(0, numDecimals).split('');
+            currentIndexClassic = 0;
+            document.getElementById('progress-bar-classic').max = charactersClassic.length;
+            updateDisplayClassic();
+        }
+
+        function startCustomPiRecitationClassic() {
+            const numDecimals = document.getElementById('custom-number-classic').value;
             if (numDecimals >= 1 && numDecimals <= 500) {
-                startPiRecitation(numDecimals);
+                startPiRecitationClassic(numDecimals);
             } else {
                 alert("Veuillez entrer un nombre entre 1 et 500.");
             }
         }
 
-        function displayNextCharacter() {
-            if (currentIndex < characters.length) {
-                currentIndex++;
-                updateDisplay();
-            } else {
-                document.getElementById('character-display').textContent = "";
-                document.getElementById('next-btn').style.display = 'none';
-                document.getElementById('prev-btn').style.display = 'none';
-                document.getElementById('restart-btn').style.display = 'none';
-                document.getElementById('end-message').style.display = 'block';
+        function displayNextCharacterClassic() {
+            if (currentIndexClassic < charactersClassic.length) {
+                currentIndexClassic++;
+                updateDisplayClassic();
             }
         }
 
-        function displayPrevCharacter() {
-            if (currentIndex > 1) {
-                currentIndex--;
-                updateDisplay();
+        function displayPrevCharacterClassic() {
+            if (currentIndexClassic > 1) {
+                currentIndexClassic--;
+                updateDisplayClassic();
             }
         }
 
-        function restartPiRecitation() {
-            currentIndex = 0;
-            updateDisplay();
+        function restartPiRecitationClassic() {
+            currentIndexClassic = 0;
+            updateDisplayClassic();
         }
 
-        function updateDisplay() {
-            const currentCharacter = characters[currentIndex - 1] || '';
-            const prevCharacter = characters[currentIndex - 2] || '';
+        function updateDisplayClassic() {
+            const currentCharacter = charactersClassic[currentIndexClassic - 1] || '';
+            const prevCharacter = charactersClassic[currentIndexClassic - 2] || '';
 
-            document.getElementById('character-display').textContent = currentCharacter;
-            document.getElementById('prev-character').textContent = prevCharacter;
+            document.getElementById('character-display-classic').textContent = currentCharacter;
+            document.getElementById('prev-character-classic').textContent = prevCharacter;
 
-            document.getElementById('counter').textContent = `${currentIndex}/${characters.length}`;
+            document.getElementById('counter-classic').textContent = `${currentIndexClassic}/${charactersClassic.length}`;
 
-            document.getElementById('progress-bar').value = currentIndex;
-            updateSliderColor();
+            document.getElementById('progress-bar-classic').value = currentIndexClassic;
+            updateSliderColorClassic();
         }
 
-        function updateFromSlider() {
-            const slider = document.getElementById('progress-bar');
-            currentIndex = parseInt(slider.value);
-            updateDisplay();
+        function updateFromSliderClassic() {
+            const slider = document.getElementById('progress-bar-classic');
+            currentIndexClassic = parseInt(slider.value);
+            updateDisplayClassic();
         }
 
-        function updateSliderColor() {
-            const slider = document.getElementById('progress-bar');
+        function updateSliderColorClassic() {
+            const slider = document.getElementById('progress-bar-classic');
             const percentage = (slider.value / slider.max) * 100;
             slider.style.background = `linear-gradient(to right, #d9534f ${percentage}%, #e0e0e0 ${percentage}%)`;
-        }
-
-        function checkAnswer(answer) {
-            const correctAnswer = characters[currentIndex];
-            const numpad = document.getElementById('controls-container');
-
-            if (answer == correctAnswer) {
-                currentIndex++;
-                updateDisplay();
-                numpad.classList.remove('shake'); // Retirer l'animation d'erreur
-            } else {
-                numpad.classList.add('shake'); // Ajouter l'animation de shake
-                setTimeout(() => {
-                    numpad.classList.remove('shake');
-                }, 200); // Retirer l'effet après 200ms
-            }
         }
     </script>
 </body>
