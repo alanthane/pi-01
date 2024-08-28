@@ -19,7 +19,7 @@
             margin-bottom: 20px;
             font-size: 2.2em;
         }
-        .link, .custom-btn, #next-btn, #prev-btn, .numpad-btn {
+        .link, .custom-btn, #next-btn, #prev-btn, .numpad-btn, #restart-btn {
             display: inline-block;
             margin: 10px;
             padding: 12px 20px;
@@ -33,7 +33,7 @@
             box-shadow: 2px 2px 0px #333333;
             transition: background-color 0.2s ease, box-shadow 0.2s ease;
         }
-        .link:hover, .custom-btn:hover, #next-btn:hover, #prev-btn:hover, .numpad-btn:hover {
+        .link:hover, .custom-btn:hover, #next-btn:hover, #prev-btn:hover, .numpad-btn:hover, #restart-btn:hover {
             background-color: #d9534f;
             color: #ffffff;
             box-shadow: 1px 1px 0px #333333;
@@ -66,8 +66,13 @@
             height: 80px;
             line-height: 80px;
         }
-        #controls {
-            margin-top: 30px;
+        #controls-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            justify-items: center;
+            max-width: 200px;
+            margin: 30px auto;
         }
         #custom-input {
             margin-top: 20px;
@@ -104,7 +109,7 @@
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
             display: none; /* Masquer par défaut */
         }
-        .link:active, .custom-btn:active, #next-btn:active, #prev-btn:active, .numpad-btn:active {
+        .link:active, .custom-btn:active, #next-btn:active, #prev-btn:active, .numpad-btn:active, #restart-btn:active {
             transform: scale(0.95);
             background-color: #c9302c;
         }
@@ -141,20 +146,7 @@
             border-radius: 50%;
             cursor: pointer;
         }
-        /* Pavé numérique */
-        #numpad {
-            margin-top: 30px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            max-width: 200px;
-            margin-left: auto;
-            margin-right: auto;
-            justify-items: center; /* Centre les éléments dans la grille */
-        }
-        #numpad > button:nth-child(10) { /* Centre le bouton "0" */
-            grid-column: 2;
-        }
+        /* Animation de tremblement */
         .shake {
             animation: shake 0.2s;
         }
@@ -177,7 +169,7 @@
     <a href="#" class="link" onclick="startPiRecitation(500)">500</a>
 
     <div id="custom-input">
-        <input type="number" id="custom-number" min="1" max="500" placeholder="(1-500)">
+        <input type="number" id="custom-number" min="1" max="500" placeholder="Entrez un nombre (1-500)">
         <button class="custom-btn" onclick="startCustomPiRecitation()">Afficher</button>
     </div>
 
@@ -193,13 +185,14 @@
         <input type="range" id="progress-bar" min="0" value="0" step="1" oninput="updateFromSlider()">
     </div>
 
-    <div id="controls">
-        <button id="prev-btn" onclick="displayPrevCharacter()"><</button>
-        <button id="next-btn" onclick="displayNextCharacter()">></button>
-    </div>
+    <!-- Conteneur pour les contrôles de navigation et le pavé numérique -->
+    <div id="controls-container">
+        <!-- Contrôles de navigation -->
+        <button id="prev-btn" onclick="displayPrevCharacter()">&#8249;</button>
+        <button id="restart-btn" onclick="restartPiRecitation()">&#10227;</button>
+        <button id="next-btn" onclick="displayNextCharacter()">&#8250;</button>
 
-    <!-- Pavé numérique -->
-    <div id="numpad">
+        <!-- Pavé numérique -->
         <button class="numpad-btn" onclick="checkAnswer(1)">1</button>
         <button class="numpad-btn" onclick="checkAnswer(2)">2</button>
         <button class="numpad-btn" onclick="checkAnswer(3)">3</button>
@@ -212,7 +205,7 @@
         <button class="numpad-btn" onclick="checkAnswer(0)">0</button>
     </div>
 
-    <div id="end-message">Bravo ! Vous avez atteint la fin.</div>
+    <div id="end-message">Bravo !</div>
 
     <script>
         const piDecimals = "1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248912279381830119491";
@@ -227,6 +220,7 @@
             updateDisplay();
             document.getElementById('next-btn').style.display = 'inline-block';
             document.getElementById('prev-btn').style.display = 'inline-block';
+            document.getElementById('restart-btn').style.display = 'inline-block';
             document.getElementById('end-message').style.display = 'none';
         }
 
@@ -247,15 +241,21 @@
                 document.getElementById('character-display').textContent = "";
                 document.getElementById('next-btn').style.display = 'none';
                 document.getElementById('prev-btn').style.display = 'none';
+                document.getElementById('restart-btn').style.display = 'none';
                 document.getElementById('end-message').style.display = 'block';
             }
         }
 
         function displayPrevCharacter() {
-            if (currentIndex > 1) { // Pour revenir au caractère précédent
+            if (currentIndex > 1) {
                 currentIndex--;
                 updateDisplay();
             }
+        }
+
+        function restartPiRecitation() {
+            currentIndex = 0;
+            updateDisplay();
         }
 
         function updateDisplay() {
@@ -285,7 +285,7 @@
 
         function checkAnswer(answer) {
             const correctAnswer = characters[currentIndex];
-            const numpad = document.getElementById('numpad');
+            const numpad = document.getElementById('controls-container');
 
             if (answer == correctAnswer) {
                 currentIndex++;
