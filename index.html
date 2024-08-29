@@ -242,6 +242,63 @@
             box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
             border: 1px solid #cccccc;
         }
+
+
+#buttons-container {
+    display: flex;
+    flex-direction: column; /* Aligne les boutons en colonne */
+    align-items: center;
+    margin-left: 10px; /* Espacement entre le character display et les boutons */
+}
+
+
+#random-mode-btn, #restart-btn-gaming {
+    font-size: 1.5em;
+    background-color: #ffffff;
+    border-radius: 3px;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid #999999;
+    margin-bottom: 10px; /* Espacement entre les boutons */
+    cursor: pointer;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+
+#random-mode-btn.active {
+    background-color: #d9534f; /* Indique que le mode aléatoire est activé */
+    color: #ffffff;
+}
+
+
+#random-decimal-container {
+    display: inline-block;
+    margin-left: 0px;
+    text-align: center;
+}
+
+
+/* Animation de changement de couleur */
+@keyframes correctAnimation {
+    0% { background-color: #ffffff; }
+    50% { background-color: #d4edda; } /* Couleur verte claire pour indiquer la réussite */
+    100% { background-color: #ffffff; }
+}
+
+.correct {
+    animation: correctAnimation 0.5s ease; /* Durée de l'animation de 0,5 seconde */
+}
+
+
+
+
+
+
     </style>
 </head>
 
@@ -256,13 +313,24 @@
     <div id="mode-gaming" style="display: none;">
 
 
-        <div id="character-display-container">
+       <div id="character-display-container">
     <div id="prev-character"></div>
     <div id="character-display"></div>
-    <button id="restart-btn-gaming" class="numpad-btn" onclick="restartPiRecitationGaming()">&#10227;</button>
+    <div id="buttons-container">
+        <button id="restart-btn-gaming" class="numpad-btn" onclick="restartPiRecitationGaming()">&#10227;</button>
+        <button id="random-mode-btn" class="numpad-btn" onclick="toggleRandomMode()">🔀</button>
+    </div>
 </div>
 
+
         <div id="counter"></div>
+
+<!-- Colonne des décimales aléatoires, initialement cachée -->
+    <div id="random-decimal-container" style="display: none;">
+        <p id="random-decimals">Choisis ton intervalle </p>
+    </div>
+
+
 
         <!-- Barre de progression interactive -->
         <div id="progress-container">
@@ -340,16 +408,25 @@
         window.onload = initializeClassicMode;
 
         function toggleMode() {
-            const isGamingMode = document.getElementById('mode-toggle').checked;
-            if (isGamingMode) {
-                document.getElementById('mode-gaming').style.display = 'block';
-                document.getElementById('mode-classic').style.display = 'none';
-                startPiRecitationGaming();
-            } else {
-                document.getElementById('mode-gaming').style.display = 'none';
-                document.getElementById('mode-classic').style.display = 'block';
-            }
+    const isGamingMode = document.getElementById('mode-toggle').checked;
+    
+    if (isGamingMode) {
+        // Activer le mode gaming
+        document.getElementById('mode-gaming').style.display = 'block';
+        document.getElementById('mode-classic').style.display = 'none';
+        startPiRecitationGaming(); // Initialiser le mode Gaming
+    } else {
+        // Activer le mode classique
+        document.getElementById('mode-gaming').style.display = 'none';
+        document.getElementById('mode-classic').style.display = 'block';
+
+        // Désactiver le mode aléatoire lors du basculement
+        if (isRandomModeActive) {
+            toggleRandomMode(); // Désactive le mode aléatoire proprement
         }
+    }
+}
+
 
         function startPiRecitationGaming() {
             charactersGaming = piDecimals.substring(0, 500).split('');
@@ -372,10 +449,20 @@
             }
         }
 
-        function restartPiRecitationGaming() {
-            currentIndexGaming = 0;
-            updateDisplayGaming();
-        }
+       function restartPiRecitationGaming() {
+    currentIndexGaming = 0;
+    currentAnswerIndex = 0; // Réinitialise l'indice de la saisie
+
+    document.getElementById('character-display').textContent = '';
+    document.getElementById('prev-character').textContent = '';
+
+    if (isRandomModeActive) {
+        generateRandomDecimals();
+        updateRandomDecimalsDisplay();
+    } else {
+        updateDisplayGaming();
+    }
+}
 
         function updateDisplayGaming() {
             const currentCharacter = charactersGaming[currentIndexGaming - 1] || '';
@@ -389,11 +476,26 @@
             updateSliderColorGaming();
         }
 
-        function updateFromSliderGaming() {
-            const slider = document.getElementById('progress-bar-gaming');
-            currentIndexGaming = parseInt(slider.value);
-            updateDisplayGaming();
-        }
+
+function updateFromSliderGaming() {
+    const slider = document.getElementById('progress-bar-gaming');
+    const isRandomModeActive = document.getElementById('random-mode-btn').classList.contains('active'); // Vérifie si le mode aléatoire est activé
+
+    if (isRandomModeActive) {
+        // Si le mode aléatoire est activé, mets simplement à jour l'intervalle de sélection
+        currentRandomMax = parseInt(slider.value);
+
+        // Actualise le compteur pour afficher X/499
+        document.getElementById('counter').textContent = `${currentRandomMax}/499`;
+
+        // Ne pas générer de nouvelles décimales ici pour éviter que le curseur change les décimales
+    } else {
+        // Si le mode aléatoire n'est pas activé, mets à jour normalement
+        currentIndexGaming = parseInt(slider.value);
+        updateDisplayGaming();
+    }
+}
+
 
         function updateSliderColorGaming() {
             const slider = document.getElementById('progress-bar-gaming');
@@ -401,25 +503,8 @@
             slider.style.background = `linear-gradient(to right, #d9534f ${percentage}%, #e0e0e0 ${percentage}%)`;
         }
 
-        function checkAnswerGaming(answer) {
-            const correctAnswer = charactersGaming[currentIndexGaming];
-            const numpad = document.getElementById('numpad');
+       
 
-            if (answer == correctAnswer) {
-                currentIndexGaming++;
-                updateDisplayGaming();
-                numpad.classList.remove('shake');
-                numpad.classList.add('correct');
-                setTimeout(() => {
-                    numpad.classList.remove('correct');
-                }, 200);
-            } else {
-                numpad.classList.add('shake');
-                setTimeout(() => {
-                    numpad.classList.remove('shake');
-                }, 200);
-            }
-        }
 
         function startPiRecitationClassic(numDecimals) {
             charactersClassic = piDecimals.substring(0, numDecimals).split('');
@@ -488,6 +573,228 @@
             const percentage = (slider.value / slider.max) * 100;
             slider.style.background = `linear-gradient(to right, #d9534f ${percentage}%, #e0e0e0 ${percentage}%)`;
         }
+
+
+let isRandomModeActive = false; // Variable pour suivre l'état du mode aléatoire
+
+function toggleRandomMode() {
+    isRandomModeActive = !isRandomModeActive;
+
+    const randomModeBtn = document.getElementById('random-mode-btn');
+    const randomDecimalContainer = document.getElementById('random-decimal-container');
+
+    if (isRandomModeActive) {
+        randomModeBtn.classList.add('active');
+        randomDecimalContainer.style.display = 'block';
+        generateRandomDecimals(); // Générez les nouvelles décimales et réinitialisez les écrans là-bas
+    } else {
+        randomModeBtn.classList.remove('active');
+        randomDecimalContainer.style.display = 'none';
+
+        // Réinitialiser les écrans pour revenir au mode normal
+        document.getElementById('character-display').textContent = '';
+        document.getElementById('prev-character').textContent = '';
+        currentIndexGaming = 0; // Réinitialise l'index pour le mode normal
+        updateDisplayGaming(); // Mets à jour l'affichage
+    }
+}
+
+
+
+
+let randomDecimals = [];
+let currentGuessIndex = 0; // Indice pour suivre quelle décimale l'utilisateur doit deviner
+
+
+function generateRandomDecimals() {
+    const maxRange = parseInt(document.getElementById('progress-bar-gaming').value); // Valeur de X
+    if (maxRange < 7) { // Assure qu'il y a au moins 7 chiffres disponibles
+        alert("Le compteur doit être au moins de 7 pour générer des décimales aléatoires.");
+        return;
+    }
+
+    // Réinitialise les écrans uniquement lors de la génération de nouvelles décimales
+    document.getElementById('character-display').textContent = '';
+    document.getElementById('prev-character').textContent = '';
+
+    const randomStart = Math.floor(Math.random() * (maxRange - 6)); // Point de départ aléatoire
+    randomDecimals = piDecimals.substring(randomStart, randomStart + 7).split(''); // Génère 7 chiffres (5 affichés + 2 à deviner)
+
+    // Met à jour l'affichage des décimales aléatoires
+    document.getElementById('random-decimals').textContent = `Complète la suite : ${randomDecimals.slice(0, 5).join(' ')}`;
+
+    currentGuessIndex = 0; // Réinitialise l'indice de saisie
+}
+
+
+
+
+let randomIndex = 0; // Index pour suivre la position dans les 5 décimales aléatoires
+
+function checkAnswerGaming(answer) {
+    const isRandomModeActive = document.getElementById('random-mode-btn').classList.contains('active');
+    const numpad = document.getElementById('numpad');
+    const characterDisplay = document.getElementById('character-display');
+    const prevCharacterDisplay = document.getElementById('prev-character');
+
+    if (isRandomModeActive) {
+        const correctAnswer1 = randomDecimals[5];
+        const correctAnswer2 = randomDecimals[6];
+
+        if (currentAnswerIndex === 0) {
+            if (answer == correctAnswer1) {
+                characterDisplay.textContent = answer;
+                characterDisplay.classList.add('correct');
+                currentAnswerIndex = 1;
+
+                // Garde le chiffre visible pendant 0,5 seconde avant de permettre la saisie suivante
+                setTimeout(() => {
+                    characterDisplay.classList.remove('correct');
+                }, 500);
+
+            } else {
+                shakeEffect(true);
+            }
+        } else if (currentAnswerIndex === 1) {
+            if (answer == correctAnswer2) {
+                prevCharacterDisplay.textContent = correctAnswer1;
+                characterDisplay.textContent = answer;
+
+                prevCharacterDisplay.classList.add('correct');
+                characterDisplay.classList.add('correct');
+
+                // Conserve les chiffres affichés pendant 0,5 seconde
+                setTimeout(() => {
+                    prevCharacterDisplay.classList.remove('correct');
+                    characterDisplay.classList.remove('correct');
+                }, 500);
+
+                // Supprime les chiffres après 0,5 seconde
+                setTimeout(() => {
+                    prevCharacterDisplay.textContent = '';
+                    characterDisplay.textContent = '';
+                    generateRandomDecimals(); // Génère une nouvelle suite de 5 décimales après le délai
+                    currentAnswerIndex = 0; // Réinitialise pour une nouvelle saisie
+                }, 500);
+
+            } else {
+                shakeEffect(true);
+            }
+        }
+    } else {
+        // Mode normal
+        const correctAnswer = charactersGaming[currentIndexGaming];
+
+        if (answer == correctAnswer) {
+            currentIndexGaming++;
+            updateDisplayGaming();
+            numpad.classList.remove('shake');
+            // Retirer l'animation correcte ici pour le mode normal
+            setTimeout(() => numpad.classList.remove('shake'), 200);
+        } else {
+            numpad.classList.add('shake');
+            setTimeout(() => numpad.classList.remove('shake'), 200);
+        }
+    }
+}
+
+
+function toggleRandomMode() {
+    isRandomModeActive = !isRandomModeActive;
+
+    const randomModeBtn = document.getElementById('random-mode-btn');
+    const randomDecimalContainer = document.getElementById('random-decimal-container');
+
+    if (isRandomModeActive) {
+        randomModeBtn.classList.add('active');
+        randomDecimalContainer.style.display = 'block';
+        generateRandomDecimals();
+
+        // Réinitialise les écrans
+        document.getElementById('character-display').textContent = '';
+        document.getElementById('prev-character').textContent = '';
+        currentAnswerIndex = 0; // Réinitialise l'index de la réponse
+    } else {
+        randomModeBtn.classList.remove('active');
+        randomDecimalContainer.style.display = 'none';
+        currentAnswerIndex = 0; // Réinitialise également pour le mode normal
+    }
+}
+
+
+function restartPiRecitationGaming() {
+    currentIndexGaming = 0;
+    currentGuessIndex = 0; // Réinitialise l'indice de saisie
+    document.getElementById('character-display').textContent = '';
+    document.getElementById('prev-character').textContent = '';
+
+    if (isRandomModeActive) {
+        generateRandomDecimals(); // Génère une nouvelle série de décimales
+    } else {
+        updateDisplayGaming(); // Réinitialise en mode normal
+    }
+}
+
+
+function updateRandomDecimalsDisplay() {
+    const randomDisplayContainer = document.getElementById('random-decimals-container');
+    randomDisplayContainer.innerHTML = ''; // Vide le contenu précédent
+
+    randomDecimals.forEach((decimal, index) => {
+        const decimalElement = document.createElement('div');
+        decimalElement.className = 'random-decimal';
+        decimalElement.textContent = decimal;
+
+        // Affiche différemment les décimales à deviner
+        if (index >= 5) decimalElement.style.visibility = 'hidden';
+
+        randomDisplayContainer.appendChild(decimalElement);
+    });
+}
+
+
+function checkAnswerRandom(answer) {
+    // Vérifie si le mode aléatoire est activé
+    if (!isRandomModeActive) return;
+
+    const correctAnswer1 = randomDecimals[5]; // 1ère décimale à deviner (6e chiffre)
+    const correctAnswer2 = randomDecimals[6]; // 2ème décimale à deviner (7e chiffre)
+
+    // Vérifie si l'utilisateur devine la première décimale correctement
+    if (currentAnswerIndex === 0) {
+        if (answer == correctAnswer1) {
+            currentAnswerIndex = 1; // Passe à la 2ème décimale
+            document.getElementById('character-display').textContent = answer; // Affiche la 1ère décimale
+            shakeEffect(false); // Pas d'erreur, pas de shake
+        } else {
+            shakeEffect(true); // Erreur, affichage de l'effet shake
+        }
+    } else if (currentAnswerIndex === 1) {
+        if (answer == correctAnswer2) {
+            // Mise à jour correcte des écrans pour la deuxième décimale
+            document.getElementById('prev-character').textContent = correctAnswer1;
+            document.getElementById('character-display').textContent = answer;
+            currentAnswerIndex = 0; // Réinitialise pour la prochaine tentative
+            generateRandomDecimals(); // Génère de nouvelles décimales après une tentative réussie
+        } else {
+            shakeEffect(true); // Erreur, affichage de l'effet shake
+        }
+    }
+}
+
+function shakeEffect(shouldShake) {
+    const numpad = document.getElementById('numpad');
+    if (shouldShake) {
+        numpad.classList.add('shake');
+        setTimeout(() => numpad.classList.remove('shake'), 200);
+    }
+}
+
+
+
+
+
+
     </script>
 </body>
 </html>
