@@ -43,12 +43,28 @@
             transform: scale(0.95);
             background-color: #c9302c;
         }
-        #character-display-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 30px;
-        }
+       
+#character-display-container {
+    display: flex; /* Utilise flexbox pour aligner les éléments */
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    gap: 10px; /* Espace entre les éléments */
+}
+
+
+#numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Répartit les boutons uniformément en 3 colonnes */
+    gap: 10px; /* Espace entre les boutons */
+    justify-items: center; /* Centre chaque bouton dans sa colonne */
+    max-width: 220px; /* Largeur maximale pour le conteneur */
+    margin: 0 auto; /* Centre horizontalement le conteneur du pavé numérique */
+    padding: 10px; /* Ajoute un peu de remplissage autour du conteneur */
+    transform: translateX(-20px); /* Décale le pavé numérique de 10 pixels vers la gauche */
+}
+
+
         #prev-character {
             font-size: 1.5em;
             background-color: #e0e0e0;
@@ -216,10 +232,13 @@
     </div>
 
     <div id="mode-gaming" style="display: none;">
+
+
         <div id="character-display-container">
-            <div id="prev-character"></div>
-            <div id="character-display"></div>
-        </div>
+    <div id="prev-character"></div>
+    <div id="character-display"></div>
+    <button id="restart-btn-gaming" class="numpad-btn" onclick="restartPiRecitationGaming()">&#10227;</button>
+</div>
 
         <div id="counter"></div>
 
@@ -228,10 +247,7 @@
             <input type="range" id="progress-bar-gaming" min="0" value="0" step="1" oninput="updateFromSliderGaming()">
         </div>
 
-        <!-- Conteneur pour le bouton Restart centré au-dessus du pavé numérique -->
-        <div style="display: flex; justify-content: center; margin-bottom: 10px;">
-            <button id="restart-btn-gaming" class="numpad-btn" onclick="restartPiRecitationGaming()">&#10227;</button>
-        </div>
+
 
         <!-- Pavé numérique centré -->
         <div id="numpad" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; justify-items: center; max-width: 220px; margin: 0 auto;">
