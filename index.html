@@ -324,6 +324,10 @@
             document.getElementById('mode-gaming').style.display = 'none';
             document.getElementById('mode-classic').style.display = 'block';
         
+
+document.getElementById('progress-bar-classic').max = 500; // Définit la barre de progression à 500 par défaut
+    startPiRecitationClassic(500); // Lance le mode classique avec 500 décimales par défaut
+
 // Initialisation avec les 500 premières décimales
     charactersClassic = piDecimals.substring(0, 500).split('');
 
