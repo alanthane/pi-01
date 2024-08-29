@@ -61,7 +61,7 @@
     max-width: 220px; /* Largeur maximale pour le conteneur */
     margin: 0 auto; /* Centre horizontalement le conteneur du pavé numérique */
     padding: 10px; /* Ajoute un peu de remplissage autour du conteneur */
-    transform: translateX(-20px); /* Décale le pavé numérique de 10 pixels vers la gauche */
+    transform: translateX(-10px); /* Décale le pavé numérique de 10 pixels vers la gauche */
 }
 
 #restart-btn-gaming {
@@ -108,11 +108,14 @@
         }
         #controls-container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            justify-items: center;
-            max-width: 200px;
-            margin: 30px auto;
+    grid-template-columns: repeat(3, 1fr); /* Répartit les boutons uniformément en 3 colonnes */
+    gap: 10px; /* Espace entre les boutons */
+    justify-items: center; /* Centre chaque bouton dans sa colonne */
+    max-width: 220px; /* Largeur maximale pour le conteneur */
+    margin: 0 auto; /* Centre horizontalement le conteneur du pavé numérique */
+    padding: 10px; /* Ajoute un peu de remplissage autour du conteneur */
+    transform: translateX(-10px); /* Décale le pavé numérique de 10 pixels vers la gauche */
+
         }
         #custom-input {
             margin-top: 20px;
@@ -302,12 +305,6 @@
             <input type="number" id="custom-number-classic" min="1" max="500" placeholder="Entrez un nombre (1-500)">
             <button class="custom-btn" onclick="searchDecimalClassic()">🔍</button>
         </div>
-
-        <a href="#" class="link" onclick="startPiRecitationClassic(100)">100</a>
-        <a href="#" class="link" onclick="startPiRecitationClassic(200)">200</a>
-        <a href="#" class="link" onclick="startPiRecitationClassic(300)">300</a>
-        <a href="#" class="link" onclick="startPiRecitationClassic(400)">400</a>
-        <a href="#" class="link" onclick="startPiRecitationClassic(500)">500</a>
 
         <div id="counter-classic"></div>
 
