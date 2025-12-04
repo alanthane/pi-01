@@ -1,438 +1,1000 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apprentissage des Décimales de Pi - V5 Finale</title>
+    <title>Apprentissage Pi - V35 Typographic</title>
 
-<!-- Favicon encodé en ligne avec fond blanc circulaire et Pi centré -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='white'/%3E%3Ctext x='16' y='22' font-size='22' font-family='Georgia, serif' fill='black' text-anchor='middle'%3E%CF%80%3C/text%3E%3C/svg%3E">
+    <!-- Import de Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onerror="console.error('Erreur: Three.js n\'a pas pu être chargé.')"></script>
+
+    <!-- Favicon (Texte pur) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='16' y='22' font-size='22' font-family='monospace' fill='black' text-anchor='middle'%3E%CF%80%3C/text%3E%3C/svg%3E">
     
-
     <style>
+        /* --- VARIABLES --- */
+        :root {
+            --color-orange: #d9534f;
+            --color-green: #2ecc71;
+            --color-red: #c0392b;
+            
+            /* Light Mode */
+            --bg-color: #f7f7f7;
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --panel-bg: #ffffff;
+            --panel-border: #000000;
+            --btn-bg: #ffffff;
+            --btn-hover: #f0f0f0;
+            --shadow: rgba(0,0,0,0.1);
+            --input-bg: #ffffff;
+            
+            --tab-inactive-bg: #ffffff;
+            --tab-active-bg: #333333;
+            --tab-active-text: #ffffff;
+
+            /* Shake Light */
+            --shake-effect: inset 0 0 60px rgba(255, 50, 50, 0.3);
+        }
+
+        /* Dark Mode */
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-main: #e0e0e0;
+            --text-secondary: #aaaaaa;
+            --panel-bg: #1e1e1e;
+            --panel-border: #444444;
+            --btn-bg: #2d2d2d;
+            --btn-hover: #3d3d3d;
+            --shadow: rgba(0,0,0,0.5);
+            --input-bg: #2d2d2d;
+            
+            --tab-inactive-bg: #1e1e1e;
+            --tab-active-bg: var(--color-orange);
+            --tab-active-text: #ffffff;
+
+            /* Shake Dark: Rouge sang sombre, pas de lumière */
+            --shake-effect: inset 0 0 100px rgba(100, 0, 0, 0.8);
+        }
+
         body {
-            font-family: 'IBM Plex Mono', monospace;
-            background-color: #f7f7f7;
-            color: #333333;
+            font-family: 'IBM Plex Mono', 'Courier New', monospace; /* Police monospace stricte */
+            background-color: var(--bg-color);
+            color: var(--text-main);
             text-align: center;
             margin: 0;
             padding: 0;
+            user-select: none;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            height: 100vh;
         }
+
+        /* --- HEADER --- */
+        .header-container {
+            position: relative;
+            max-width: 450px;
+            margin: 0 auto;
+            padding-top: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         h1 {
-            margin-top: 0;
-            font-weight: 400;
-            color: #000000;
-            margin-bottom: 20px;
+            margin: 0;
+            font-weight: 700;
+            color: var(--text-main);
             font-size: 2.2em;
+            line-height: 1;
+            letter-spacing: -2px;
         }
+
+        /* THEME TOGGLE (Pure CSS Shape) */
+        #theme-toggle {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            background: none;
+            border: 2px solid var(--text-main);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+        
+        /* Le cercle intérieur change pour simuler lune/soleil */
+        #theme-indicator {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: var(--text-main);
+            transition: transform 0.3s ease;
+        }
+        
+        /* État Lune (croissant) */
+        [data-theme="dark"] #theme-indicator {
+            transform: translateX(10px); /* Décale le rond noir pour faire un croissant */
+            background-color: transparent;
+            box-shadow: -8px 0 0 0 var(--text-main); /* L'ombre fait le croissant */
+        }
+        
+        /* État Soleil (plein) */
+        [data-theme="light"] #theme-indicator {
+            transform: scale(0.6); /* Petit rond au milieu */
+            box-shadow: none;
+            background-color: var(--text-main);
+        }
+
+        /* --- TABS --- */
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin: 15px auto 20px auto;
+            max-width: 300px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid var(--panel-border);
+            background-color: var(--tab-inactive-bg);
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tab-btn:first-child { border-radius: 5px 0 0 5px; border-right: none; }
+        .tab-btn:last-child { border-radius: 0 5px 5px 0; }
+        
+        .tab-btn.active {
+            background-color: var(--tab-active-bg);
+            color: var(--tab-active-text);
+            border-color: var(--tab-active-bg);
+        }
+
+        /* --- BUTTONS --- */
         .link, .custom-btn, .control-btn, .numpad-btn {
             display: inline-block;
             margin: 10px;
             padding: 12px 20px;
-            background-color: #ffffff;
-            color: #000000;
+            background-color: var(--btn-bg);
+            color: var(--text-main);
             text-decoration: none;
             border-radius: 5px;
             cursor: pointer;
-            border: 2px solid #000000;
+            border: 2px solid var(--panel-border);
             font-size: 1.1em;
-            box-shadow: 2px 2px 0px #333333;
-            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+            font-weight: bold;
+            box-shadow: 3px 3px 0px var(--text-main); /* Ombre "Block" */
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .link:active, .custom-btn:active, .control-btn:active, .numpad-btn:active, .numpad-btn.active-key {
+            transform: translate(3px, 3px);
+            box-shadow: 0px 0px 0px var(--text-main);
+            background-color: var(--color-orange);
+            color: white;
+            border-color: var(--color-orange);
         }
         .link:hover, .custom-btn:hover, .control-btn:hover, .numpad-btn:hover {
-            background-color: #d9534f;
-            color: #ffffff;
-            box-shadow: 1px 1px 0px #333333;
+             background-color: var(--btn-hover);
         }
-        .link:active, .custom-btn:active, .control-btn:active, .numpad-btn:active {
-            transform: scale(0.95);
-            background-color: #c9302c;
+
+        /* --- LAYOUT --- */
+        #character-display-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px; 
+            gap: 10px;
         }
-       
-#character-display-container {
-    display: flex; /* Utilise flexbox pour aligner les éléments */
-    justify-content: center;
-    align-items: center;
-    margin-top: 30px;
-    gap: 10px; /* Espace entre les éléments */
-}
 
+        #numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            justify-items: center;
+            max-width: 220px;
+            margin: 0 auto;
+            padding: 10px;
+            transform: translateX(-10px);
+        }
 
-#numpad {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Répartit les boutons uniformément en 3 colonnes */
-    gap: 10px; /* Espace entre les boutons */
-    justify-items: center; /* Centre chaque bouton dans sa colonne */
-    max-width: 220px; /* Largeur maximale pour le conteneur */
-    margin: 0 auto; /* Centre horizontalement le conteneur du pavé numérique */
-    padding: 10px; /* Ajoute un peu de remplissage autour du conteneur */
-    transform: translateX(-10px); /* Décale le pavé numérique de 10 pixels vers la gauche */
-}
-
-#restart-btn-gaming {
-    font-size: 1.5em; /* Taille de la police similaire à l'écran 'previous character' */
-    background-color: #white; /* Couleur de fond identique */
-    border-radius: 3px; /* Coins arrondis similaires */
-    width: 50px; /* Largeur identique à l'écran 'previous character' */
-    height: 50px; /* Hauteur identique à l'écran 'previous character' */
-    line-height: 50px; /* Centrer le texte verticalement */
-    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1); /* Effet d'ombre similaire */
-    border: 1px solid #999999; /* Bordure identique */
-    margin-right: 10px; /* Espace entre le bouton et l'écran 'character display' */
-    cursor: pointer; /* Curseur de type pointeur */
-    display: inline-flex; /* Flex pour aligner le texte */
-    justify-content: center; /* Centre horizontalement le contenu */
-    align-items: center; /* Centre verticalement le contenu */
-    transition: background-color 0.2s ease, transform 0.2s ease; /* Effet de transition */
-}
-
-
-
+        .display-box {
+            background-color: var(--panel-bg);
+            color: var(--text-main);
+            border-radius: 5px;
+            border: 2px solid var(--panel-border);
+            box-shadow: inset 2px 2px 5px var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
 
         #prev-character {
             font-size: 1.5em;
-            background-color: #e0e0e0;
-            border-radius: 3px;
+            opacity: 0.6;
             width: 50px;
             height: 50px;
-            line-height: 50px;
-            margin-right: 15px;
-            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
-            border: 1px solid #999999;
         }
         #character-display {
             font-size: 3em;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 5px;
-            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
-            border: 2px solid #000000;
             width: 80px;
             height: 80px;
-            line-height: 80px;
         }
-        #controls-container {
-            display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Répartit les boutons uniformément en 3 colonnes */
-    gap: 10px; /* Espace entre les boutons */
-    justify-items: center; /* Centre chaque bouton dans sa colonne */
-    max-width: 220px; /* Largeur maximale pour le conteneur */
-    margin: 0 auto; /* Centre horizontalement le conteneur du pavé numérique */
-    padding: 10px; /* Ajoute un peu de remplissage autour du conteneur */
-    transform: translateX(-10px); /* Décale le pavé numérique de 10 pixels vers la gauche */
-
-        }
-        #custom-input {
-            margin-top: 20px;
-        }
-        input[type="number"] {
-            padding: 10px;
-            font-size: 1em;
-            border: 2px solid #000000;
-            border-radius: 5px;
-            background-color: #ffffff;
-            width: 150px;
+        
+        /* Biblio Boxes */
+        #character-display-classic {
+            font-size: 2.5em; 
+            padding: 10px; 
+            background-color: var(--panel-bg); 
+            color: var(--text-main);
+            border-radius: 5px; 
+            box-shadow: inset 2px 2px 5px var(--shadow); 
+            border: 2px solid var(--panel-border); 
+            width: 70px; 
+            height: 70px; 
+            line-height: 70px;
             text-align: center;
-            box-sizing: border-box;
-            font-family: 'IBM Plex Mono', monospace;
-            color: #333333;
+            font-weight: bold;
         }
-        input[type="number"]:focus {
-            outline: none;
-            border-color: #d9534f;
+        .small-display {
+            font-size: 1.2em;
+            background-color: var(--btn-bg);
+            color: var(--text-main);
+            border-radius: 3px;
+            width: 40px;
+            height: 50px;
+            line-height: 50px;
+            box-shadow: inset 2px 2px 2px var(--shadow);
+            border: 1px solid var(--panel-border);
+            text-align: center;
+            opacity: 0.8;
         }
+
+        /* --- COUNTER & COMBO --- */
+        #counter-wrapper {
+            margin-top: 12px;
+            margin-bottom: 8px;
+            height: 32px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+        
         #counter {
-            margin-top: 20px;
+            font-size: 1.2em;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+
+        .combo-badge {
+            font-weight: bold;
+            color: var(--color-orange);
+            opacity: 0;
+            transition: opacity 0.3s ease;
             font-size: 1.1em;
-            color: #666666;
+            display: flex;
+            align-items: center;
+            height: 100%;
+            padding-top: 2px;
+            gap: 8px;
         }
-        /* Barre de progression */
+        .combo-visible { opacity: 1; }
+        .combo-pop { animation: pop-combo 0.15s ease-out; }
+        @keyframes pop-combo {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- PROGRESS & 3D --- */
+        #progress-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 90%;
+            max-width: 450px;
+            margin: 5px auto 15px auto;
+        }
+
+        #progress-container-relative {
+            flex-grow: 1;
+            margin-right: 10px;
+            position: relative;
+            height: 10px;
+        }
+        
         #progress-container {
-            margin-top: 20px;
-            width: 80%;
-            margin-left: auto;
-            margin-right: auto;
+             flex-grow: 1;
+             margin-right: 10px;
         }
+
+        #mini-canvas-container {
+            width: 80px;
+            height: 80px;
+            background: transparent;
+            border-radius: 5px;
+            border: 1px solid rgba(0,0,0,0.1); /* Cadre subtil pour la 3D */
+            transition: filter 0.3s ease;
+        }
+
         input[type="range"] {
             width: 100%;
             -webkit-appearance: none;
-            background: linear-gradient(to right, #d9534f 0%, #d9534f 0%, #e0e0e0 0%);
+            background: linear-gradient(to right, var(--color-orange) 0%, var(--color-orange) 0%, var(--btn-bg) 0%);
             height: 10px;
-            border-radius: 10px;
+            border-radius: 5px;
             outline: none;
             cursor: pointer;
             transition: background 0.4s ease;
+            display: block;
+            border: 1px solid var(--panel-border);
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px;
+            width: 10px; /* Curseur carré */
             height: 20px;
-            background: #d9534f;
-            border-radius: 50%;
+            background: var(--text-main); /* Noir/Blanc selon thème */
+            border: none;
             cursor: pointer;
+            position: relative;
+            z-index: 2;
+            border-radius: 2px;
         }
-        input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: #d9534f;
-            border-radius: 50%;
+
+        .bar-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: var(--color-orange);
+            /* Carrés pour le style */
+            border-radius: 0; 
+            pointer-events: none;
+            opacity: 0;
+            z-index: 1;
+        }
+        @keyframes particle-rise {
+            0% { transform: translateY(0) scale(1); opacity: 0.8; }
+            100% { transform: translateY(-20px) scale(0); opacity: 0; }
+        }
+
+        /* --- CARTE --- */
+        #pi-grid-container {
+            display: none;
+            margin: 15px auto;
+            width: 90%;
+            max-width: 400px;
+            background: var(--panel-bg);
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid var(--panel-border);
+            box-shadow: 4px 4px 0px var(--shadow);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        #pi-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 4px;
+        }
+
+        .pi-cell {
+            font-size: 0.9em;
+            padding: 6px 2px;
+            text-align: center;
+            border-radius: 2px;
             cursor: pointer;
+            transition: background 0.2s;
+            color: var(--text-main);
+            border: 1px solid transparent;
         }
-        /* Animation de tremblement */
-        .shake {
-            animation: shake 0.2s;
+        .pi-cell:hover { 
+            background-color: var(--btn-hover); 
+            border-color: var(--panel-border);
         }
-        @keyframes shake {
+        .pi-cell.active {
+            background-color: var(--color-orange);
+            color: white;
+            font-weight: bold;
+            border: 1px solid var(--text-main);
+        }
+
+        /* --- ANIMATIONS --- */
+        .shake { animation: shake-pad 0.2s; }
+        @keyframes shake-pad {
             0% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
             50% { transform: translateX(5px); }
             75% { transform: translateX(-5px); }
             100% { transform: translateX(0); }
         }
-        /* Slider Toggle */
-        #mode-toggle-container {
-            margin: 20px auto;
-            width: 100px;
-            height: 50px;
+
+        .screen-shake-error {
+            animation: shake-screen 0.3s cubic-bezier(.36,.07,.19,.97) both;
+            box-shadow: var(--shake-effect);
+        }
+        @keyframes shake-screen {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        .correct { animation: correctAnimation 0.5s ease; }
+        @keyframes correctAnimation {
+            0% { background-color: var(--panel-bg); }
+            50% { background-color: rgba(46, 204, 113, 0.3); }
+            100% { background-color: var(--panel-bg); }
+        }
+
+        #buttons-container {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            position: relative;
+            margin-left: 10px;
         }
-        #mode-toggle {
-            width: 100%;
-            height: 100%;
-            -webkit-appearance: none;
-            appearance: none;
-            background: #e0e0e0;
-            border-radius: 25px;
-            outline: none;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        #mode-toggle::before {
-            content: '';
-            width: 40px;
-            height: 40px;
-            background: #ffffff;
-            border-radius: 50%;
-            position: absolute;
-            left: 5px;
-            top: 5px;
-            transition: left 0.3s ease;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        #mode-toggle:checked::before {
-            left: 55px;
-        }
-        #mode-toggle:checked {
-            background-color: #d9534f;
-        }
-        .icon {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            top: 15px;
-        }
-        /* Style pour les petits écrans des caractères précédents et suivants */
-        .small-display {
-            font-size: 1.2em;
-            background-color: #f0f0f0;
-            border-radius: 3px;
+
+        #random-mode-btn {
+            font-size: 1.5em;
+            background-color: var(--btn-bg);
+            color: var(--text-main);
+            border-radius: 5px;
             width: 50px;
             height: 50px;
             line-height: 50px;
-            margin: 0 5px;
-            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
-            border: 1px solid #cccccc;
+            box-shadow: 3px 3px 0px var(--text-main);
+            border: 2px solid var(--panel-border);
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s ease;
+            font-weight: bold; /* Pour le "?" */
         }
+        #random-mode-btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0; }
+        #random-mode-btn.active {
+            background-color: var(--color-orange);
+            color: #ffffff;
+            border-color: var(--color-orange);
+        }
+        
+        #controls-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            justify-items: center;
+            max-width: 220px;
+            margin: 0 auto;
+            padding: 10px;
+            transform: translateX(-10px);
+        }
+        #custom-input { margin-top: 20px; }
+        input[type="number"] {
+            padding: 10px;
+            font-size: 1em;
+            border: 2px solid var(--panel-border);
+            border-radius: 5px;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            width: 150px;
+            text-align: center;
+            box-sizing: border-box;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        input[type="number"]:focus { outline: none; border-color: var(--color-orange); }
+        #counter-classic { margin-top: 10px; color: var(--text-secondary); font-size: 0.9em; }
 
-
-#buttons-container {
-    display: flex;
-    flex-direction: column; /* Aligne les boutons en colonne */
-    align-items: center;
-    margin-left: 10px; /* Espacement entre le character display et les boutons */
-}
-
-
-#random-mode-btn, #restart-btn-gaming {
-    font-size: 1.5em;
-    background-color: #ffffff;
-    border-radius: 3px;
-    width: 50px;
-    height: 50px;
-    line-height: 50px;
-    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
-    border: 1px solid #999999;
-    margin-bottom: 10px; /* Espacement entre les boutons */
-    cursor: pointer;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    transition: background-color 0.2s ease, transform 0.2s ease;
-}
-
-
-#random-mode-btn.active {
-    background-color: #d9534f; /* Indique que le mode aléatoire est activé */
-    color: #ffffff;
-}
-
-
-#random-decimal-container {
-    display: inline-block;
-    margin-left: 0px;
-    text-align: center;
-}
-
-
-/* Animation de changement de couleur */
-@keyframes correctAnimation {
-    0% { background-color: #ffffff; }
-    50% { background-color: #d4edda; } /* Couleur verte claire pour indiquer la réussite */
-    100% { background-color: #ffffff; }
-}
-
-.correct {
-    animation: correctAnimation 0.5s ease; /* Durée de l'animation de 0,5 seconde */
-}
-
-
-
-
-
-
+        #random-decimal-container {
+            display: inline-block;
+            margin-left: 0px;
+            text-align: center;
+        }
     </style>
 </head>
 
 <body>
-    <h1>𝞹</h1>
-
-    <!-- Slider pour basculer entre les modes -->
-    <div id="mode-toggle-container">
-        <input type="checkbox" id="mode-toggle" onclick="toggleMode()">
+    <div class="header-container">
+        <h1>𝞹</h1>
+        <!-- THEME TOGGLE EN CSS PUR -->
+        <div id="theme-toggle" onclick="toggleTheme()">
+            <div id="theme-indicator"></div>
+        </div>
     </div>
 
-    <div id="mode-gaming" style="display: none;">
+    <!-- NAVIGATION TABS -->
+    <div class="tab-container">
+        <div id="tab-gaming" class="tab-btn active" onclick="switchTab('gaming')">GAME</div>
+        <div id="tab-classic" class="tab-btn" onclick="switchTab('classic')">LIBRARY</div>
+    </div>
 
-
+    <!-- Mode Gaming (Défaut) -->
+    <div id="mode-gaming" style="display: block;">
+       
        <div id="character-display-container">
-    <div id="prev-character"></div>
-    <div id="character-display"></div>
-    <div id="buttons-container">
-        <button id="restart-btn-gaming" class="numpad-btn" onclick="restartPiRecitationGaming()">&#10227;</button>
-        <button id="random-mode-btn" class="numpad-btn" onclick="toggleRandomMode()">🔀</button>
-    </div>
-</div>
-
-
-        <div id="counter"></div>
-
-<!-- Colonne des décimales aléatoires, initialement cachée -->
-    <div id="random-decimal-container" style="display: none;">
-        <p id="random-decimals">Choisis ton intervalle </p>
-    </div>
-
-
-
-        <!-- Barre de progression interactive -->
-        <div id="progress-container">
-            <input type="range" id="progress-bar-gaming" min="0" value="0" step="1" oninput="updateFromSliderGaming()">
+            <div id="prev-character" class="display-box"></div>
+            <div id="character-display" class="display-box"></div>
+            <div id="buttons-container">
+                <button id="restart-btn-gaming" class="numpad-btn" onclick="restartPiRecitationGaming()">&#8635;</button>
+                <!-- Bouton Shuffle Typographique -->
+                <button id="random-mode-btn" class="numpad-btn" onclick="toggleRandomMode()">?</button>
+            </div>
         </div>
 
+        <!-- Compact Counter Wrapper -->
+        <div id="counter-wrapper">
+            <span id="counter">0/500</span>
+            <span id="combo-display" class="combo-badge"></span>
+        </div>
 
+        <div id="random-decimal-container" style="display: none;">
+            <p id="random-decimals">Choisis ton intervalle </p>
+        </div>
 
-        <!-- Pavé numérique centré -->
-        <div id="numpad" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; justify-items: center; max-width: 220px; margin: 0 auto;">
-            <button class="numpad-btn" onclick="checkAnswerGaming(1)">1</button>
-            <button class="numpad-btn" onclick="checkAnswerGaming(2)">2</button>
-            <button class="numpad-btn" onclick="checkAnswerGaming(3)">3</button>
-            <button class="numpad-btn" onclick="checkAnswerGaming(4)">4</button>
-            <button class="numpad-btn" onclick="checkAnswerGaming(5)">5</button>
-            <button class="numpad-btn" onclick="checkAnswerGaming(6)">6</button>
-            <button class="numpad-btn" onclick="checkAnswerGaming(7)">7</button>
-            <button class="numpad-btn" onclick="checkAnswerGaming(8)">8</button>
-            <button class="numpad-btn" onclick="checkAnswerGaming(9)">9</button>
-            <button class="numpad-btn" onclick="checkAnswerGaming(0)" style="grid-column: 2;">0</button>
+        <div id="progress-wrapper">
+            <!-- Conteneur relatif pour positionner les particules sur la barre -->
+            <div id="progress-container-relative">
+                <input type="range" id="progress-bar-gaming" min="0" value="0" step="1" oninput="updateFromSliderGaming()">
+            </div>
+            <div id="mini-canvas-container"></div>
+        </div>
+
+        <div id="numpad">
+            <button id="btn-1" class="numpad-btn" onclick="checkAnswerGaming(1)">1</button>
+            <button id="btn-2" class="numpad-btn" onclick="checkAnswerGaming(2)">2</button>
+            <button id="btn-3" class="numpad-btn" onclick="checkAnswerGaming(3)">3</button>
+            <button id="btn-4" class="numpad-btn" onclick="checkAnswerGaming(4)">4</button>
+            <button id="btn-5" class="numpad-btn" onclick="checkAnswerGaming(5)">5</button>
+            <button id="btn-6" class="numpad-btn" onclick="checkAnswerGaming(6)">6</button>
+            <button id="btn-7" class="numpad-btn" onclick="checkAnswerGaming(7)">7</button>
+            <button id="btn-8" class="numpad-btn" onclick="checkAnswerGaming(8)">8</button>
+            <button id="btn-9" class="numpad-btn" onclick="checkAnswerGaming(9)">9</button>
+            <button id="btn-0" class="numpad-btn" onclick="checkAnswerGaming(0)" style="grid-column: 2;">0</button>
         </div>
     </div>
 
-    <!-- Contenu du mode Classique (affiché par défaut) -->
-    <div id="mode-classic">
-        <p>Naviguez dans les décimales de 0 à 499 :</p>
-
-        <!-- Mise à jour du conteneur d'affichage des caractères -->
+    <!-- Mode Classique (Biblio) -->
+    <div id="mode-classic" style="display: none;">
+        <p>Naviguez dans les décimales de 0 à 500 :</p>
         <div id="character-display-container">
             <div id="prev2-character-classic" class="small-display"></div>
             <div id="prev1-character-classic" class="small-display"></div>
-
-            <div id="character-display-classic" style="font-size: 2.5em; padding: 15px; background-color: #ffffff; border-radius: 5px; box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1); border: 2px solid #000000; width: 80px; height: 80px; line-height: 80px;"></div>
-
+            <div id="character-display-classic"></div>
             <div id="next1-character-classic" class="small-display"></div>
             <div id="next2-character-classic" class="small-display"></div>
         </div>
 
         <div id="custom-input">
             <input type="number" id="custom-number-classic" min="1" max="500" placeholder="Entrez un nombre (1-500)">
-            <button class="custom-btn" onclick="searchDecimalClassic()">🔍</button>
+            <button class="custom-btn" onclick="searchDecimalClassic()">Go</button>
         </div>
 
         <div id="counter-classic"></div>
-
-        <!-- Barre de progression interactive pour le mode classique -->
-        <div id="progress-container">
-            <input type="range" id="progress-bar-classic" min="0" value="0" step="1" oninput="updateFromSliderClassic()">
+        
+        <div id="progress-wrapper">
+            <div id="progress-container" style="flex-grow: 1; margin-right: 10px;">
+                <input type="range" id="progress-bar-classic" min="0" value="0" step="1" oninput="updateFromSliderClassic()">
+            </div>
         </div>
 
-        <!-- Contrôles de navigation pour le mode classique -->
         <div id="controls-container">
             <button id="prev-btn-classic" class="numpad-btn" onclick="displayPrevCharacterClassic()">&#8249;</button>
-            <button id="restart-btn-classic" class="numpad-btn" onclick="restartPiRecitationClassic()">&#10227;</button>
+            <button id="restart-btn-classic" class="numpad-btn" onclick="restartPiRecitationClassic()">&#8635;</button>
             <button id="next-btn-classic" class="numpad-btn" onclick="displayNextCharacterClassic()">&#8250;</button>
+        </div>
+
+        <!-- Carte des décimales -->
+        <div style="margin-top: 20px;">
+             <button class="custom-btn" onclick="toggleGridMap()">[ # ] CARTE</button>
+        </div>
+        
+        <div id="pi-grid-container">
+            <div id="pi-grid"></div>
         </div>
     </div>
 
     <script>
-        const piDecimals = "1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248912279381830119491";
+        const piDecimals = "14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914564856692346034861045432664821339360726024914127372458700660631558817488152092096282925409171536436789259036001133053054882046652138414695194151160943305727036575959195309218611738193261179310511854807446237996274956735188575272489122793818301194912";
 
         let charactersGaming = [];
         let charactersClassic = [];
         let currentIndexGaming = 0;
         let currentIndexClassic = 0;
+        let isRandomModeActive = false;
+        let randomDecimals = [];
+        let currentAnswerIndex = 0;
+        let comboCount = 0;
 
-        function initializeClassicMode() {
-            document.getElementById('mode-gaming').style.display = 'none';
-            document.getElementById('mode-classic').style.display = 'block';
-            document.getElementById('progress-bar-classic').max = 500;
-            startPiRecitationClassic(500);
+        /* --- THREE.JS VARIABLES --- */
+        let scene, camera, renderer, outerGroup, innerMesh, particles;
+        let animationId;
+        
+        let isErrorState = false;
+        let isCharging = false;
+        
+        let baseRotationSpeed = 0.005;
+        let currentRotationSpeed = 0.005;
+        let maxRotationSpeed = 0.15;
+        
+        let currentLevel = -1; 
+
+        // COULEURS
+        const COLOR_ORANGE = 0xd9534f; 
+        const COLOR_GREEN = 0x2ecc71;  
+        const COLOR_RED = 0xc0392b;    
+        
+        // Variables CSS pour la lueur 3D (utilisées via getComputedStyle si besoin, ou hardcodées ici)
+        const CSS_GLOW_ORANGE = 'drop-shadow(0 0 8px rgba(217, 83, 79, 0.6))';
+        const CSS_GLOW_GREEN = 'drop-shadow(0 0 15px rgba(46, 204, 113, 0.8))';
+        const CSS_GLOW_RED = 'drop-shadow(0 0 10px rgba(192, 57, 43, 0.8))';
+
+        function initializeApp() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+
+            if (typeof THREE === 'undefined') {
+                console.error("Three.js n'est pas chargé.");
+                return;
+            }
+            init3D(); 
+            animate3D();
+            startPiRecitationGaming();
+            
             charactersClassic = piDecimals.substring(0, 500).split('');
+            document.getElementById('progress-bar-classic').max = 500;
+            generateGridMap();
         }
 
-        window.onload = initializeClassicMode;
+        window.onload = initializeApp;
 
-        function toggleMode() {
-    const isGamingMode = document.getElementById('mode-toggle').checked;
-    
-    if (isGamingMode) {
-        // Activer le mode gaming
-        document.getElementById('mode-gaming').style.display = 'block';
-        document.getElementById('mode-classic').style.display = 'none';
-        startPiRecitationGaming(); // Initialiser le mode Gaming
-    } else {
-        // Activer le mode classique
-        document.getElementById('mode-gaming').style.display = 'none';
-        document.getElementById('mode-classic').style.display = 'block';
-
-        // Désactiver le mode aléatoire lors du basculement
-        if (isRandomModeActive) {
-            toggleRandomMode(); // Désactive le mode aléatoire proprement
+        /* --- THEME MANAGEMENT (NO EMOJI) --- */
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const target = current === 'dark' ? 'light' : 'dark';
+            setTheme(target);
         }
-    }
-}
 
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            // Slider update
+            updateSliderColorGaming();
+            const sliderClassic = document.getElementById('progress-bar-classic');
+            if(sliderClassic) {
+                const val = sliderClassic.value;
+                const max = sliderClassic.max;
+                const percentage = (val / max) * 100;
+                // Fallback color for slider inactive part
+                const inactiveColor = theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
+                sliderClassic.style.background = `linear-gradient(to right, var(--color-orange) ${percentage}%, ${inactiveColor} ${percentage}%)`;
+            }
+        }
 
+        /* --- HELPER MAGNETISM --- */
+        function applyMagneticEffect(value) {
+            const threshold = 3; 
+            const nearest50 = Math.round(value / 50) * 50;
+            if (Math.abs(value - nearest50) <= threshold) {
+                return nearest50;
+            }
+            return value;
+        }
+
+        /* --- SETUP THREE.JS --- */
+        function init3D() {
+            const container = document.getElementById('mini-canvas-container');
+            const width = 80;
+            const height = 80;
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(width, height);
+            container.appendChild(renderer.domElement);
+            
+            container.style.filter = CSS_GLOW_ORANGE;
+
+            updateShapeGeometry(0); 
+
+            createParticles();
+        }
+
+        function updateShapeGeometry(level) {
+             if(level === currentLevel) return;
+             currentLevel = level;
+             
+             if(outerGroup) {
+                 scene.remove(outerGroup);
+                 outerGroup.traverse(child => {
+                     if(child.geometry) child.geometry.dispose();
+                     if(child.material) child.material.dispose();
+                 });
+             }
+
+             outerGroup = new THREE.Group();
+             scene.add(outerGroup);
+
+             let geometry;
+             if (level === 0) { geometry = new THREE.BoxGeometry(1, 1, 1); } 
+             else if (level === 1) { geometry = new THREE.OctahedronGeometry(0.7); } 
+             else if (level === 2) { geometry = new THREE.DodecahedronGeometry(0.7); } 
+             else if (level === 3) { geometry = new THREE.IcosahedronGeometry(0.7); } 
+             else { geometry = new THREE.IcosahedronGeometry(0.7, 1); }
+
+             const outerGeo = geometry.clone();
+             outerGeo.scale(2.5, 2.5, 2.5);
+             const outerEdges = new THREE.EdgesGeometry(outerGeo);
+             const materialOuter = new THREE.LineBasicMaterial({ color: COLOR_ORANGE });
+             const outerMesh = new THREE.LineSegments(outerEdges, materialOuter);
+             outerGroup.add(outerMesh);
+
+             const innerGeo = geometry.clone();
+             innerGeo.scale(1.2, 1.2, 1.2);
+             const materialInner = new THREE.MeshBasicMaterial({ 
+                 color: COLOR_ORANGE, 
+                 transparent: true, 
+                 opacity: 0.6 
+             });
+             innerMesh = new THREE.Mesh(innerGeo, materialInner);
+             
+             const innerEdgesGeo = new THREE.EdgesGeometry(innerGeo);
+             const innerEdgesMesh = new THREE.LineSegments(innerEdgesGeo, new THREE.LineBasicMaterial({ color: 0xffffff }));
+             innerMesh.add(innerEdgesMesh);
+             
+             outerGroup.add(innerMesh);
+
+             const connectorMat = new THREE.LineBasicMaterial({ color: COLOR_ORANGE, transparent: true, opacity: 0.4 });
+             const posAttribute = geometry.attributes.position;
+             for ( let i = 0; i < posAttribute.count; i ++ ) {
+                 const v = new THREE.Vector3();
+                 v.fromBufferAttribute( posAttribute, i );
+                 const points = [];
+                 points.push( v.clone().multiplyScalar(2.5) );
+                 points.push( v.clone().multiplyScalar(1.2) );
+                 const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+                 const line = new THREE.Line(lineGeo, connectorMat);
+                 outerGroup.add(line);
+             }
+        }
+
+        function createParticles() {
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 100;
+            const posArray = new Float32Array(particlesCount * 3);
+            const initialPosArray = new Float32Array(particlesCount * 3); 
+
+            for(let i = 0; i < particlesCount * 3; i += 3) {
+                posArray[i] = (Math.random() - 0.5) * 6;
+                posArray[i+1] = (Math.random() - 0.5) * 6;
+                posArray[i+2] = (Math.random() - 0.5) * 6;
+                
+                initialPosArray[i] = posArray[i];
+                initialPosArray[i+1] = posArray[i+1];
+                initialPosArray[i+2] = posArray[i+2];
+            }
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            particlesGeometry.setAttribute('initialPosition', new THREE.BufferAttribute(initialPosArray, 3));
+            
+            const materialParticles = new THREE.PointsMaterial({
+                size: 0.1,
+                color: COLOR_ORANGE,
+                transparent: true,
+                opacity: 0.5
+            });
+
+            particles = new THREE.Points(particlesGeometry, materialParticles);
+            scene.add(particles);
+        }
+
+        function animate3D() {
+            animationId = requestAnimationFrame(animate3D);
+            const container = document.getElementById('mini-canvas-container');
+
+            if (currentRotationSpeed > baseRotationSpeed) {
+                currentRotationSpeed -= 0.001; 
+            } else {
+                currentRotationSpeed = baseRotationSpeed;
+            }
+
+            if (outerGroup && innerMesh) {
+                outerGroup.rotation.x += currentRotationSpeed;
+                outerGroup.rotation.y += currentRotationSpeed * 0.8;
+
+                if (isErrorState) {
+                    innerMesh.scale.setScalar(2.0); 
+                    innerMesh.material.color.setHex(COLOR_RED);
+                    outerGroup.children.forEach(child => {
+                        if(child.material) child.material.color.setHex(COLOR_RED);
+                    });
+                    if(container) container.style.filter = CSS_GLOW_RED;
+
+                } else if (isCharging) {
+                    innerMesh.rotation.x -= 0.1; 
+                    innerMesh.rotation.y -= 0.1;
+                    innerMesh.scale.setScalar(0.8); 
+                    
+                    innerMesh.material.color.setHex(COLOR_ORANGE);
+                     outerGroup.children.forEach(child => {
+                        if(child.material) child.material.color.setHex(COLOR_ORANGE);
+                    });
+                    if(container) container.style.filter = CSS_GLOW_ORANGE;
+
+                } else {
+                    innerMesh.rotation.x = 0; 
+                    innerMesh.rotation.y = 0;
+                    innerMesh.scale.setScalar(1.0);
+
+                    innerMesh.material.color.setHex(COLOR_ORANGE);
+                    outerGroup.children.forEach(child => {
+                        if(child.material) child.material.color.setHex(COLOR_ORANGE);
+                    });
+                    if(container) container.style.filter = CSS_GLOW_ORANGE;
+                }
+            }
+
+            if (particles) {
+                const positions = particles.geometry.attributes.position.array;
+                const initialPositions = particles.geometry.attributes.initialPosition.array;
+
+                if (isCharging && !isErrorState) {
+                    particles.material.color.setHex(COLOR_ORANGE); 
+                    for(let i = 0; i < positions.length; i += 3) {
+                        positions[i] *= 0.8;   
+                        positions[i+1] *= 0.8; 
+                        positions[i+2] *= 0.8; 
+
+                        if (Math.abs(positions[i]) < 0.1 && Math.abs(positions[i+1]) < 0.1) {
+                             positions[i] = (Math.random() - 0.5) * 6;
+                             positions[i+1] = (Math.random() - 0.5) * 6;
+                             positions[i+2] = (Math.random() - 0.5) * 6;
+                        }
+                    }
+                } else {
+                    particles.material.color.setHex(COLOR_ORANGE);
+                    for(let i = 0; i < positions.length; i += 3) {
+                        positions[i] += (initialPositions[i] - positions[i]) * 0.05;
+                        positions[i+1] += (initialPositions[i+1] - positions[i+1]) * 0.05;
+                        positions[i+2] += (initialPositions[i+2] - positions[i+2]) * 0.05;
+                    }
+                    particles.rotation.y -= 0.002;
+                }
+                particles.geometry.attributes.position.needsUpdate = true;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function triggerChargingEffect() {
+            isCharging = true;
+            setTimeout(() => { isCharging = false; }, 500);
+            spawnProgressBarParticles();
+        }
+        
+        function spawnProgressBarParticles() {
+            const container = document.getElementById('progress-container-relative');
+            const slider = document.getElementById('progress-bar-gaming');
+            const percentage = (slider.value / slider.max);
+            const filledWidth = container.offsetWidth * percentage;
+            
+            for(let i=0; i<8; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('bar-particle');
+                const randomX = Math.random() * filledWidth;
+                const randomY = (Math.random() * 10); 
+                particle.style.left = randomX + 'px';
+                particle.style.top = (randomY - 5) + 'px'; 
+                particle.style.animation = `particle-rise ${0.4 + Math.random()*0.4}s ease-out forwards`;
+                container.appendChild(particle);
+                setTimeout(() => { particle.remove(); }, 1000);
+            }
+        }
+
+        function triggerScreenShake() {
+            document.body.classList.add('screen-shake-error');
+            setTimeout(() => {
+                document.body.classList.remove('screen-shake-error');
+            }, 300);
+        }
+
+        function updateCombo(isCorrect) {
+            const comboDisplay = document.getElementById('combo-display');
+            if (isCorrect) {
+                comboCount++;
+                if (comboCount > 1) {
+                    // UTILISATION DE L'ICONE TYPO ETOILE
+                    comboDisplay.innerHTML = `| Combo x${comboCount} <span style="color:var(--color-orange); font-size:1.2em;">★</span>`;
+                    comboDisplay.classList.add('combo-visible');
+                    comboDisplay.classList.remove('combo-pop');
+                    void comboDisplay.offsetWidth;
+                    comboDisplay.classList.add('combo-pop');
+                }
+            } else {
+                comboCount = 0;
+                comboDisplay.classList.remove('combo-visible');
+                comboDisplay.textContent = "";
+            }
+        }
+
+        /* --- GESTION CLAVIER --- */
+        document.addEventListener('keydown', function(event) {
+            const modeGaming = document.getElementById('mode-gaming').style.display !== 'none';
+            
+            if (modeGaming && event.key >= '0' && event.key <= '9') {
+                const num = parseInt(event.key);
+                simulateButtonPress(num);
+                checkAnswerGaming(num);
+            } else if (!modeGaming) {
+                if (event.key === "ArrowRight") displayNextCharacterClassic();
+                if (event.key === "ArrowLeft") displayPrevCharacterClassic();
+            }
+        });
+
+        function simulateButtonPress(num) {
+            const btnId = 'btn-' + num;
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.classList.add('active-key');
+                setTimeout(() => { btn.classList.remove('active-key'); }, 150);
+            }
+        }
+
+        /* --- NAVIGATION TABS --- */
+        function switchTab(tab) {
+            const gamingDiv = document.getElementById('mode-gaming');
+            const classicDiv = document.getElementById('mode-classic');
+            const tabGaming = document.getElementById('tab-gaming');
+            const tabClassic = document.getElementById('tab-classic');
+
+            if (tab === 'gaming') {
+                gamingDiv.style.display = 'block';
+                classicDiv.style.display = 'none';
+                tabGaming.classList.add('active');
+                tabClassic.classList.remove('active');
+                
+                if (!scene) { init3D(); }
+                cancelAnimationFrame(animationId);
+                animate3D();
+                
+                startPiRecitationGaming();
+            } else {
+                gamingDiv.style.display = 'none';
+                classicDiv.style.display = 'block';
+                tabGaming.classList.remove('active');
+                tabClassic.classList.add('active');
+                
+                comboCount = 0;
+                updateCombo(false);
+
+                if (isRandomModeActive) toggleRandomMode();
+                cancelAnimationFrame(animationId); 
+                updateDisplayClassic();
+            }
+        }
+
+        /* --- LOGIQUE JEU --- */
         function startPiRecitationGaming() {
             charactersGaming = piDecimals.substring(0, 500).split('');
             currentIndexGaming = 0;
@@ -440,107 +1002,255 @@
             updateDisplayGaming();
         }
 
-        function displayNextCharacterGaming() {
-            if (currentIndexGaming < charactersGaming.length) {
-                currentIndexGaming++;
+        function restartPiRecitationGaming() {
+            currentIndexGaming = 0;
+            currentAnswerIndex = 0;
+            currentRotationSpeed = baseRotationSpeed;
+            comboCount = 0;
+            updateCombo(false);
+
+            document.getElementById('character-display').textContent = '';
+            document.getElementById('prev-character').textContent = '';
+            document.getElementById('numpad').classList.remove('shake');
+            
+            isErrorState = false;
+            updateShapeGeometry(0);
+
+            if (isRandomModeActive) {
+                generateRandomDecimals();
+            } else {
                 updateDisplayGaming();
             }
         }
 
-        function displayPrevCharacterGaming() {
-            if (currentIndexGaming > 1) {
-                currentIndexGaming--;
-                updateDisplayGaming();
+function updateDisplayGaming() {
+            let currentCharacter = '';
+            let prevCharacter = '';
+
+            // START CONTEXT
+            if (currentIndexGaming === 0) {
+                prevCharacter = '3';
+                currentCharacter = '.';
+            } else if (currentIndexGaming === 1) {
+                prevCharacter = '.';
+                currentCharacter = charactersGaming[0]; 
+            } else {
+                currentCharacter = charactersGaming[currentIndexGaming - 1] || '';
+                prevCharacter = charactersGaming[currentIndexGaming - 2] || '';
             }
-        }
-
-       function restartPiRecitationGaming() {
-    currentIndexGaming = 0;
-    currentAnswerIndex = 0; // Réinitialise l'indice de la saisie
-
-    document.getElementById('character-display').textContent = '';
-    document.getElementById('prev-character').textContent = '';
-
-    if (isRandomModeActive) {
-        generateRandomDecimals();
-        updateRandomDecimalsDisplay();
-    } else {
-        updateDisplayGaming();
-    }
-}
-
-        function updateDisplayGaming() {
-            const currentCharacter = charactersGaming[currentIndexGaming - 1] || '';
-            const prevCharacter = charactersGaming[currentIndexGaming - 2] || '';
 
             document.getElementById('character-display').textContent = currentCharacter;
             document.getElementById('prev-character').textContent = prevCharacter;
 
             document.getElementById('counter').textContent = `${currentIndexGaming}/${charactersGaming.length}`;
             document.getElementById('progress-bar-gaming').value = currentIndexGaming;
+            
             updateSliderColorGaming();
+            
+            const newLevel = Math.floor(currentIndexGaming / 100);
+            updateShapeGeometry(newLevel);
         }
 
+        function updateFromSliderGaming() {
+            comboCount = 0;
+            updateCombo(false);
 
-function updateFromSliderGaming() {
-    const slider = document.getElementById('progress-bar-gaming');
-    const isRandomModeActive = document.getElementById('random-mode-btn').classList.contains('active'); // Vérifie si le mode aléatoire est activé
+            const slider = document.getElementById('progress-bar-gaming');
+            let rawValue = parseInt(slider.value);
+            let snappedValue = applyMagneticEffect(rawValue);
+            
+            if (snappedValue !== rawValue) slider.value = snappedValue;
 
-    if (isRandomModeActive) {
-        // Si le mode aléatoire est activé, mets simplement à jour l'intervalle de sélection
-        currentRandomMax = parseInt(slider.value);
-
-        // Actualise le compteur pour afficher X/499
-        document.getElementById('counter').textContent = `${currentRandomMax}/499`;
-
-        // Ne pas générer de nouvelles décimales ici pour éviter que le curseur change les décimales
-    } else {
-        // Si le mode aléatoire n'est pas activé, mets à jour normalement
-        currentIndexGaming = parseInt(slider.value);
-        updateDisplayGaming();
-    }
-}
-
+            if (isRandomModeActive) {
+                document.getElementById('counter').textContent = `${slider.value}/499`;
+                updateSliderColorGaming();
+            } else {
+                currentIndexGaming = snappedValue;
+                updateDisplayGaming();
+            }
+        }
 
         function updateSliderColorGaming() {
             const slider = document.getElementById('progress-bar-gaming');
             const percentage = (slider.value / slider.max) * 100;
-            slider.style.background = `linear-gradient(to right, #d9534f ${percentage}%, #e0e0e0 ${percentage}%)`;
+            const inactiveColor = document.documentElement.getAttribute('data-theme') === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
+            slider.style.background = `linear-gradient(to right, var(--color-orange) ${percentage}%, ${inactiveColor} ${percentage}%)`;
         }
 
-       
+        function toggleRandomMode() {
+            comboCount = 0;
+            updateCombo(false);
 
+            isRandomModeActive = !isRandomModeActive;
+            const randomModeBtn = document.getElementById('random-mode-btn');
+            const randomDecimalContainer = document.getElementById('random-decimal-container');
 
-        function startPiRecitationClassic(numDecimals) {
-            charactersClassic = piDecimals.substring(0, numDecimals).split('');
-            currentIndexClassic = 0;
-            document.getElementById('progress-bar-classic').max = charactersClassic.length;
-            updateDisplayClassic();
-        }
-
-        function searchDecimalClassic() {
-            const decimalIndex = document.getElementById('custom-number-classic').value;
-            if (decimalIndex >= 1 && decimalIndex <= 500) {
-                startPiRecitationClassic(500);
-                currentIndexClassic = parseInt(decimalIndex);
-                updateDisplayClassic();
-                document.getElementById('progress-bar-classic').value = currentIndexClassic;
+            if (isRandomModeActive) {
+                randomModeBtn.classList.add('active');
+                randomDecimalContainer.style.display = 'block';
+                generateRandomDecimals();
             } else {
-                alert("Veuillez entrer un nombre entre 1 et 500.");
+                randomModeBtn.classList.remove('active');
+                randomDecimalContainer.style.display = 'none';
+                restartPiRecitationGaming();
             }
         }
 
+        function generateRandomDecimals() {
+            const maxRange = parseInt(document.getElementById('progress-bar-gaming').value);
+            let safeRange = maxRange;
+            if (safeRange < 7) safeRange = 7; 
+
+            document.getElementById('character-display').textContent = '';
+            document.getElementById('prev-character').textContent = '';
+            currentAnswerIndex = 0;
+
+            const randomStart = Math.floor(Math.random() * (safeRange - 6));
+            randomDecimals = piDecimals.substring(randomStart, randomStart + 7).split('');
+            
+            document.getElementById('random-decimals').textContent = `Complète la suite : ${randomDecimals.slice(0, 5).join(' ')}`;
+        }
+
+        function checkAnswerGaming(answer) {
+            const characterDisplay = document.getElementById('character-display');
+            const prevCharacterDisplay = document.getElementById('prev-character');
+            const numpad = document.getElementById('numpad');
+
+            let isCorrect = false; 
+
+            if (isRandomModeActive) {
+                const correctAnswer1 = randomDecimals[5];
+                const correctAnswer2 = randomDecimals[6];
+
+                if (currentAnswerIndex === 0) {
+                    if (answer == correctAnswer1) {
+                        characterDisplay.textContent = answer;
+                        characterDisplay.classList.add('correct');
+                        currentAnswerIndex = 1;
+                        setTimeout(() => characterDisplay.classList.remove('correct'), 500);
+                        isCorrect = true;
+                    }
+                } else if (currentAnswerIndex === 1) {
+                    if (answer == correctAnswer2) {
+                        prevCharacterDisplay.textContent = correctAnswer1;
+                        characterDisplay.textContent = answer;
+                        prevCharacterDisplay.classList.add('correct');
+                        characterDisplay.classList.add('correct');
+
+                        setTimeout(() => {
+                            prevCharacterDisplay.classList.remove('correct');
+                            characterDisplay.classList.remove('correct');
+                        }, 500);
+                        setTimeout(() => { generateRandomDecimals(); }, 600);
+                        isCorrect = true;
+                    }
+                }
+            } else {
+                const correctAnswer = charactersGaming[currentIndexGaming];
+                if (answer == correctAnswer) {
+                    currentIndexGaming++;
+                    updateDisplayGaming();
+                    numpad.classList.remove('shake');
+                    isCorrect = true;
+                }
+            }
+
+            if (isCorrect) {
+                isErrorState = false;
+                triggerChargingEffect();
+                updateCombo(true); 
+                
+                currentRotationSpeed += 0.05;
+                if (currentRotationSpeed > maxRotationSpeed) currentRotationSpeed = maxRotationSpeed;
+
+            } else {
+                isErrorState = true;
+                updateCombo(false); 
+                triggerScreenShake();
+                
+                numpad.classList.remove('shake');
+                void numpad.offsetWidth;
+                numpad.classList.add('shake');
+                
+                currentRotationSpeed = baseRotationSpeed;
+            }
+        }
+
+        /* --- LOGIQUE CLASSIQUE --- */
+        function navigateClassic(delta) {
+             // Not used
+        }
+
         function displayNextCharacterClassic() {
-            if (currentIndexClassic < charactersClassic.length) {
+            if (currentIndexClassic < 500) {
                 currentIndexClassic++;
                 updateDisplayClassic();
             }
         }
 
         function displayPrevCharacterClassic() {
-            if (currentIndexClassic > 1) {
+            if (currentIndexClassic > 0) {
                 currentIndexClassic--;
                 updateDisplayClassic();
+            }
+        }
+
+        function updateDisplayClassic() {
+            let mainChar = "", p1 = "", p2 = "";
+            
+            if (currentIndexClassic === 0) {
+                 mainChar = ".";
+                 p1 = "3";
+                 p2 = "";
+            } else if (currentIndexClassic === 1) {
+                 mainChar = charactersClassic[0]; 
+                 p1 = ".";
+                 p2 = "3";
+            } else {
+                 mainChar = charactersClassic[currentIndexClassic - 1];
+                 p1 = charactersClassic[currentIndexClassic - 2];
+                 if (currentIndexClassic === 2) p2 = "."; 
+                 else p2 = charactersClassic[currentIndexClassic - 3];
+            }
+            
+            let n1 = charactersClassic[currentIndexClassic] || "";
+            let n2 = charactersClassic[currentIndexClassic + 1] || "";
+
+            document.getElementById('character-display-classic').textContent = mainChar;
+            document.getElementById('prev1-character-classic').textContent = p1;
+            document.getElementById('prev2-character-classic').textContent = p2;
+            document.getElementById('next1-character-classic').textContent = n1;
+            document.getElementById('next2-character-classic').textContent = n2;
+
+            document.getElementById('counter-classic').textContent = `${currentIndexClassic}/500`;
+            document.getElementById('progress-bar-classic').value = currentIndexClassic;
+            
+            const slider = document.getElementById('progress-bar-classic');
+            const percentage = (slider.value / slider.max) * 100;
+            const inactiveColor = document.documentElement.getAttribute('data-theme') === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
+            slider.style.background = `linear-gradient(to right, var(--color-orange) ${percentage}%, ${inactiveColor} ${percentage}%)`;
+            
+            updateGridHighlight();
+        }
+
+        function updateFromSliderClassic() {
+            const slider = document.getElementById('progress-bar-classic');
+            let rawValue = parseInt(slider.value);
+            let snappedValue = applyMagneticEffect(rawValue);
+            
+            if (snappedValue !== rawValue) slider.value = snappedValue;
+
+            currentIndexClassic = snappedValue;
+            updateDisplayClassic();
+        }
+
+        function searchDecimalClassic() {
+            const decimalIndex = document.getElementById('custom-number-classic').value;
+            if (decimalIndex >= 0 && decimalIndex <= 500) {
+                currentIndexClassic = parseInt(decimalIndex);
+                updateDisplayClassic();
+            } else {
+                alert("Veuillez entrer un nombre entre 0 et 500.");
             }
         }
 
@@ -548,258 +1258,53 @@ function updateFromSliderGaming() {
             currentIndexClassic = 0;
             updateDisplayClassic();
         }
-
-        function updateDisplayClassic() {
-            const currentCharacter = charactersClassic[currentIndexClassic - 1] || '';
-            const prev1Character = charactersClassic[currentIndexClassic - 2] || '';
-            const prev2Character = charactersClassic[currentIndexClassic - 3] || '';
-            const next1Character = charactersClassic[currentIndexClassic] || '';
-            const next2Character = charactersClassic[currentIndexClassic + 1] || '';
-
-            document.getElementById('character-display-classic').textContent = currentCharacter;
-            document.getElementById('prev1-character-classic').textContent = prev1Character;
-            document.getElementById('prev2-character-classic').textContent = prev2Character;
-            document.getElementById('next1-character-classic').textContent = next1Character;
-            document.getElementById('next2-character-classic').textContent = next2Character;
-
-            document.getElementById('counter-classic').textContent = `${currentIndexClassic}/${charactersClassic.length}`;
-            document.getElementById('progress-bar-classic').value = currentIndexClassic;
-            updateSliderColorClassic();
+        
+        /* --- GRILLE --- */
+        function generateGridMap() {
+             const grid = document.getElementById('pi-grid');
+             grid.innerHTML = "";
+             
+             const cell3 = document.createElement('div');
+             cell3.className = 'pi-cell';
+             cell3.textContent = "3.";
+             cell3.onclick = () => { currentIndexClassic = 0; updateDisplayClassic(); };
+             cell3.id = "cell-0";
+             grid.appendChild(cell3);
+             
+             for(let i=0; i<500; i++) {
+                  const cell = document.createElement('div');
+                  cell.className = 'pi-cell';
+                  cell.textContent = piDecimals[i];
+                  cell.onclick = () => { currentIndexClassic = i+1; updateDisplayClassic(); };
+                  cell.id = "cell-" + (i+1);
+                  grid.appendChild(cell);
+             }
         }
-
-        function updateFromSliderClassic() {
-            const slider = document.getElementById('progress-bar-classic');
-            currentIndexClassic = parseInt(slider.value);
-            updateDisplayClassic();
+        
+        function toggleGridMap() {
+             const container = document.getElementById('pi-grid-container');
+             if(container.style.display === 'block') {
+                  container.style.display = 'none';
+             } else {
+                  container.style.display = 'block';
+                  const active = document.querySelector('.pi-cell.active');
+                  if(active) active.scrollIntoView({block: "center"});
+             }
         }
-
-        function updateSliderColorClassic() {
-            const slider = document.getElementById('progress-bar-classic');
-            const percentage = (slider.value / slider.max) * 100;
-            slider.style.background = `linear-gradient(to right, #d9534f ${percentage}%, #e0e0e0 ${percentage}%)`;
+        
+        function updateGridHighlight() {
+             const old = document.querySelector('.pi-cell.active');
+             if(old) old.classList.remove('active');
+             
+             const current = document.getElementById("cell-" + currentIndexClassic);
+             if(current) {
+                  current.classList.add('active');
+                  const container = document.getElementById('pi-grid-container');
+                  if(container.style.display === 'block') {
+                      current.scrollIntoView({block: "center", behavior: "smooth"});
+                  }
+             }
         }
-
-
-let isRandomModeActive = false; // Variable pour suivre l'état du mode aléatoire
-
-function toggleRandomMode() {
-    isRandomModeActive = !isRandomModeActive;
-
-    const randomModeBtn = document.getElementById('random-mode-btn');
-    const randomDecimalContainer = document.getElementById('random-decimal-container');
-
-    if (isRandomModeActive) {
-        randomModeBtn.classList.add('active');
-        randomDecimalContainer.style.display = 'block';
-        generateRandomDecimals(); // Générez les nouvelles décimales et réinitialisez les écrans là-bas
-    } else {
-        randomModeBtn.classList.remove('active');
-        randomDecimalContainer.style.display = 'none';
-
-        // Réinitialiser les écrans pour revenir au mode normal
-        document.getElementById('character-display').textContent = '';
-        document.getElementById('prev-character').textContent = '';
-        currentIndexGaming = 0; // Réinitialise l'index pour le mode normal
-        updateDisplayGaming(); // Mets à jour l'affichage
-    }
-}
-
-
-
-
-let randomDecimals = [];
-let currentGuessIndex = 0; // Indice pour suivre quelle décimale l'utilisateur doit deviner
-
-
-function generateRandomDecimals() {
-    const maxRange = parseInt(document.getElementById('progress-bar-gaming').value); // Valeur de X
-    if (maxRange < 7) { // Assure qu'il y a au moins 7 chiffres disponibles
-        alert("Le compteur doit être au moins de 7 pour générer des décimales aléatoires.");
-        return;
-    }
-
-    // Réinitialise les écrans uniquement lors de la génération de nouvelles décimales
-    document.getElementById('character-display').textContent = '';
-    document.getElementById('prev-character').textContent = '';
-
-    const randomStart = Math.floor(Math.random() * (maxRange - 6)); // Point de départ aléatoire
-    randomDecimals = piDecimals.substring(randomStart, randomStart + 7).split(''); // Génère 7 chiffres (5 affichés + 2 à deviner)
-
-    // Met à jour l'affichage des décimales aléatoires
-    document.getElementById('random-decimals').textContent = `Complète la suite : ${randomDecimals.slice(0, 5).join(' ')}`;
-
-    currentGuessIndex = 0; // Réinitialise l'indice de saisie
-}
-
-
-
-
-let randomIndex = 0; // Index pour suivre la position dans les 5 décimales aléatoires
-
-function checkAnswerGaming(answer) {
-    const isRandomModeActive = document.getElementById('random-mode-btn').classList.contains('active');
-    const numpad = document.getElementById('numpad');
-    const characterDisplay = document.getElementById('character-display');
-    const prevCharacterDisplay = document.getElementById('prev-character');
-
-    if (isRandomModeActive) {
-        const correctAnswer1 = randomDecimals[5];
-        const correctAnswer2 = randomDecimals[6];
-
-        if (currentAnswerIndex === 0) {
-            if (answer == correctAnswer1) {
-                characterDisplay.textContent = answer;
-                characterDisplay.classList.add('correct');
-                currentAnswerIndex = 1;
-
-                // Garde le chiffre visible pendant 0,5 seconde avant de permettre la saisie suivante
-                setTimeout(() => {
-                    characterDisplay.classList.remove('correct');
-                }, 500);
-
-            } else {
-                shakeEffect(true);
-            }
-        } else if (currentAnswerIndex === 1) {
-            if (answer == correctAnswer2) {
-                prevCharacterDisplay.textContent = correctAnswer1;
-                characterDisplay.textContent = answer;
-
-                prevCharacterDisplay.classList.add('correct');
-                characterDisplay.classList.add('correct');
-
-                // Conserve les chiffres affichés pendant 0,5 seconde
-                setTimeout(() => {
-                    prevCharacterDisplay.classList.remove('correct');
-                    characterDisplay.classList.remove('correct');
-                }, 500);
-
-                // Supprime les chiffres après 0,5 seconde
-                setTimeout(() => {
-                    prevCharacterDisplay.textContent = '';
-                    characterDisplay.textContent = '';
-                    generateRandomDecimals(); // Génère une nouvelle suite de 5 décimales après le délai
-                    currentAnswerIndex = 0; // Réinitialise pour une nouvelle saisie
-                }, 500);
-
-            } else {
-                shakeEffect(true);
-            }
-        }
-    } else {
-        // Mode normal
-        const correctAnswer = charactersGaming[currentIndexGaming];
-
-        if (answer == correctAnswer) {
-            currentIndexGaming++;
-            updateDisplayGaming();
-            numpad.classList.remove('shake');
-            // Retirer l'animation correcte ici pour le mode normal
-            setTimeout(() => numpad.classList.remove('shake'), 200);
-        } else {
-            numpad.classList.add('shake');
-            setTimeout(() => numpad.classList.remove('shake'), 200);
-        }
-    }
-}
-
-
-function toggleRandomMode() {
-    isRandomModeActive = !isRandomModeActive;
-
-    const randomModeBtn = document.getElementById('random-mode-btn');
-    const randomDecimalContainer = document.getElementById('random-decimal-container');
-
-    if (isRandomModeActive) {
-        randomModeBtn.classList.add('active');
-        randomDecimalContainer.style.display = 'block';
-        generateRandomDecimals();
-
-        // Réinitialise les écrans
-        document.getElementById('character-display').textContent = '';
-        document.getElementById('prev-character').textContent = '';
-        currentAnswerIndex = 0; // Réinitialise l'index de la réponse
-    } else {
-        randomModeBtn.classList.remove('active');
-        randomDecimalContainer.style.display = 'none';
-        currentAnswerIndex = 0; // Réinitialise également pour le mode normal
-    }
-}
-
-
-function restartPiRecitationGaming() {
-    currentIndexGaming = 0;
-    currentGuessIndex = 0; // Réinitialise l'indice de saisie
-    document.getElementById('character-display').textContent = '';
-    document.getElementById('prev-character').textContent = '';
-
-    if (isRandomModeActive) {
-        generateRandomDecimals(); // Génère une nouvelle série de décimales
-    } else {
-        updateDisplayGaming(); // Réinitialise en mode normal
-    }
-}
-
-
-function updateRandomDecimalsDisplay() {
-    const randomDisplayContainer = document.getElementById('random-decimals-container');
-    randomDisplayContainer.innerHTML = ''; // Vide le contenu précédent
-
-    randomDecimals.forEach((decimal, index) => {
-        const decimalElement = document.createElement('div');
-        decimalElement.className = 'random-decimal';
-        decimalElement.textContent = decimal;
-
-        // Affiche différemment les décimales à deviner
-        if (index >= 5) decimalElement.style.visibility = 'hidden';
-
-        randomDisplayContainer.appendChild(decimalElement);
-    });
-}
-
-
-function checkAnswerRandom(answer) {
-    // Vérifie si le mode aléatoire est activé
-    if (!isRandomModeActive) return;
-
-    const correctAnswer1 = randomDecimals[5]; // 1ère décimale à deviner (6e chiffre)
-    const correctAnswer2 = randomDecimals[6]; // 2ème décimale à deviner (7e chiffre)
-
-    // Vérifie si l'utilisateur devine la première décimale correctement
-    if (currentAnswerIndex === 0) {
-        if (answer == correctAnswer1) {
-            currentAnswerIndex = 1; // Passe à la 2ème décimale
-            document.getElementById('character-display').textContent = answer; // Affiche la 1ère décimale
-            shakeEffect(false); // Pas d'erreur, pas de shake
-        } else {
-            shakeEffect(true); // Erreur, affichage de l'effet shake
-        }
-    } else if (currentAnswerIndex === 1) {
-        if (answer == correctAnswer2) {
-            // Mise à jour correcte des écrans pour la deuxième décimale
-            document.getElementById('prev-character').textContent = correctAnswer1;
-            document.getElementById('character-display').textContent = answer;
-            currentAnswerIndex = 0; // Réinitialise pour la prochaine tentative
-            generateRandomDecimals(); // Génère de nouvelles décimales après une tentative réussie
-        } else {
-            shakeEffect(true); // Erreur, affichage de l'effet shake
-        }
-    }
-}
-
-function shakeEffect(shouldShake) {
-    const numpad = document.getElementById('numpad');
-    if (shouldShake) {
-        numpad.classList.add('shake');
-        setTimeout(() => numpad.classList.remove('shake'), 200);
-    }
-}
-
-
-
-
-
-
     </script>
 </body>
 </html>
